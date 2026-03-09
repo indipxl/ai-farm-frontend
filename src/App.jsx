@@ -1,13 +1,23 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { useState } from 'react'
 import './App.css'
-import FarmSenseApp from './FarmSenseApp'
+import LandingPage from "./LandingPage";
+import LoginPage from "./Login";
+import FarmSenseApp from './FarmSenseApp';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // const [count, setCount] = useState(0)
 
   return (
     <>
-    <FarmSenseApp />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/dashboard" element={<FarmSenseApp />} />
+      </Routes>
+    </BrowserRouter>
+    {/* <FarmSenseApp /> */}
     </>
   )
 }
