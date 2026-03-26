@@ -16,7 +16,7 @@ app = FastAPI(title="Ai Farm API", version="1.0.0")
 # CORS - support frontend ports
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173, https://gaia-sabah-c3-group2-aifarm.web.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
