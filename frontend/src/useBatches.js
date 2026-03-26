@@ -1,0 +1,52 @@
+import { useState, useEffect } from 'react';
+
+export function useBatches() {
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchBatches();
+  }, []);
+
+  const fetchBatches = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:8005/api/batches');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error('Failed to fetch: ' + errorText);
+      }
+      const result = await response.json();
+      setBatches(result.batches || []);
+    } catch (err) {
+      console.error('Fetch batches error:', err);
+      setError(err.message);
+      setBatches([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addBatch = async (formData) => {
+    try {
+      const response = await fetch('http://localhost:8005/api/register-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error('Add batch failed: ' + errorText);
+      }
+      const newBatch = await response.json();
+      fetchBatches(); // Refresh list
+      return newBatch;
+    } catch (err) {
+      console.error('Add batch error:', err);
+      throw err;
+    }
+  };
+
+  return { batches, loading, error, refetch: fetchBatches, addBatch };
+}
