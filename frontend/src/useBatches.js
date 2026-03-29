@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export function useBatches() {
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +14,7 @@ export function useBatches() {
   const fetchBatches = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/api/batches');
+      const response = await fetch(`${API_BASE_URL}/api/batches`);
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error('Failed to fetch: ' + errorText);
@@ -30,7 +32,7 @@ export function useBatches() {
 
   const addBatch = async (formData) => {
     try {
-      const response = await fetch('http://localhost:8080/api/register-batch', {
+      const response = await fetch(`${API_BASE_URL}/api/register-batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
