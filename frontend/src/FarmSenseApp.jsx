@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./farmsense.css";
 import { useBatches } from "./useBatches"
-
+import { auth } from "./firebase";
+import { signOut } from "firebase/auth";
+import toast from 'react-hot-toast';
 // ═══════════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════════
@@ -341,11 +343,29 @@ function QRModal({ batch, onClose }) {
   );
 }
 
-function RegisterBatchModal({ onClose, onSubmit, formData, setFormData }) {
-  const handleSubmit = (e) => {
+function RegisterBatchModal({ onClose, onSubmit, formData, setFormData, submitting }) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.crop && formData.location && formData.planted) {
-      onSubmit(formData);
+
+    try {
+      await onSubmit(formData);
+
+      toast.success(`Successfully registered!`, {
+        style: {
+          border: '1px solid #4a7c59',
+          padding: '16px',
+          color: '#1c1f16',
+          background: '#f0ece4',
+        },
+        iconTheme: {
+          primary: '#4a7c59',
+          secondary: '#FFFAEE',
+        },
+      });
+
+      onClose();
+    } catch (error) {
+      toast.error("Failed to register batch. Please try again.");
     }
   };
 
@@ -353,59 +373,92 @@ function RegisterBatchModal({ onClose, onSubmit, formData, setFormData }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const isValid = formData.crop.trim() && formData.location.trim() && formData.planted;
+
   return (
-    <div className="fs-modal-overlay" onClick={onClose}>
-      <div className="fs-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: "480px" }}>
-        <div className="fs-modal__header">
-          <div className="fs-modal__eyebrow">New Batch Registration</div>
-          <div className="fs-modal__title">Register New Crop Batch</div>
+    <div className="fs-modal-overlay" onClick={onClose} style={RegisterBatchModalStyle.overlay}>
+      <div className="fs-modal" onClick={e => e.stopPropagation()} style={RegisterBatchModalStyle.modal}>
+
+        <div style={RegisterBatchModalStyle.header}>
+          <h2 style={RegisterBatchModalStyle.title}>Register New Batch</h2>
+          <p style={RegisterBatchModalStyle.subtitle}>Enter details to start tracking this crop cycle.</p>
         </div>
-        <form onSubmit={handleSubmit} className="fs-modal__body">
-          <div className="fs-form-group">
-            <label>Crop Type *</label>
-            <input
-              type="text"
-              name="crop"
-              placeholder="e.g. 🍅 Tomatoes"
-              value={formData.crop}
-              onChange={handleChange}
-              required
-            />
+
+        <form onSubmit={handleSubmit} style={RegisterBatchModalStyle.form}>
+          <div style={RegisterBatchModalStyle.grid}>
+            {/* Crop Name */}
+            <div style={RegisterBatchModalStyle.group}>
+              <label style={RegisterBatchModalStyle.label}>Crop Name *</label>
+              <input
+                style={RegisterBatchModalStyle.input}
+                name="crop"
+                placeholder="e.g. 🌴 Oil Palm"
+                value={formData.crop}
+                onChange={handleChange}
+                disabled={submitting}
+              />
+            </div>
+
+            {/* Location */}
+            <div style={RegisterBatchModalStyle.group}>
+              <label style={RegisterBatchModalStyle.label}>Location *</label>
+              <input
+                style={RegisterBatchModalStyle.input}
+                name="location"
+                placeholder="e.g. Sabah Section A1"
+                value={formData.location}
+                onChange={handleChange}
+                disabled={submitting}
+              />
+            </div>
+
+            {/* Planted Date */}
+            <div style={RegisterBatchModalStyle.group}>
+              <label style={RegisterBatchModalStyle.label}>Planted Date *</label>
+              <input
+                style={RegisterBatchModalStyle.input}
+                type="date"
+                name="planted"
+                value={formData.planted}
+                onChange={handleChange}
+                disabled={submitting}
+              />
+            </div>
+
+            {/* Notes */}
+            <div style={RegisterBatchModalStyle.group}>
+              <label style={RegisterBatchModalStyle.label}>Notes (optional)</label>
+              <textarea
+                style={{ ...RegisterBatchModalStyle.input, height: '80px', resize: 'none' }}
+                name="notes"
+                placeholder="Fertilizer type, soil condition..."
+                value={formData.notes}
+                onChange={handleChange}
+                disabled={submitting}
+              />
+            </div>
           </div>
-          <div className="fs-form-group">
-            <label>Location *</label>
-            <input
-              type="text"
-              name="location"
-              placeholder="e.g. Block A · Row 1-12"
-              value={formData.location}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="fs-form-group">
-            <label>Planted Date *</label>
-            <input
-              type="date"
-              name="planted"
-              value={formData.planted}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="fs-form-group">
-            <label>Notes (optional)</label>
-            <textarea
-              name="notes"
-              placeholder="Any special notes or instructions..."
-              value={formData.notes}
-              onChange={handleChange}
-              rows="3"
-            />
-          </div>
-          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-            <button type="button" className="fs-btn fs-btn--ghost" onClick={onClose}>Cancel</button>
-            <button type="submit" className="fs-btn fs-btn--gold">Register Batch</button>
+
+          <div style={RegisterBatchModalStyle.footer}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={RegisterBatchModalStyle.cancelBtn}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              style={{
+                ...RegisterBatchModalStyle.submitBtn,
+                opacity: (!isValid || submitting) ? 0.6 : 1,
+                cursor: (!isValid || submitting) ? 'not-allowed' : 'pointer'
+              }}
+              disabled={!isValid || submitting}
+            >
+              {submitting ? 'Processing...' : 'Confirm Registration'}
+            </button>
           </div>
         </form>
       </div>
@@ -439,27 +492,27 @@ function DashboardPage() {
     setNewBatchForm({ ...newBatchForm, [e.target.name]: e.target.value });
   };
 
+  const [notification, setNotification] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
   const handleSubmitBatch = async (formData) => {
+    setSubmitting(true);
     try {
       await addBatch(formData);
+      setNotification({
+        type: 'success',
+        message: `✅ ${formData.crop} batch registered successfully!`
+      });
+      setTimeout(() => setNotification(null), 4000);
       handleCloseModal();
     } catch (error) {
-      alert('Registration failed: ' + error.message + '. Using local fallback.');
-      // Fallback local
-      const nextIdNum = batches.length + 1;
-      const newId = `BATCH-${nextIdNum.toString().padStart(3, '0')}`;
-      const formattedDate = new Date(formData.planted).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      const fallbackBatch = {
-        id: newId,
-        crop: formData.crop,
-        location: formData.location,
-        planted: formattedDate,
-        status: "healthy",
-        sensors: [] // abbreviated
-        // ... rest
-      };
-      setBatches(prev => [...prev, fallbackBatch]);
-      handleCloseModal();
+      setNotification({
+        type: 'error',
+        message: 'Failed to register batch. Please try again.'
+      });
+      setTimeout(() => setNotification(null), 4000);
+    } finally {
+      setSubmitting(false);
     }
   };
   const alertCount = batches.filter(b => b.status !== "healthy").length;
@@ -488,7 +541,7 @@ function DashboardPage() {
       <div className="fs-page-header">
         <div>
           <div className="fs-page-eyebrow">Sunday, 1 March 2026 · Kota Kinabalu</div>
-          <h1 className="fs-page-title">Crop <em>Intelligencee</em> Dashboard</h1>
+          <h1 className="fs-page-title">Crop <em>Intelligence</em> Dashboard</h1>
           <p className="fs-page-sub">Monitoring {batches.length} active batches · Last sensor sync 4 min ago</p>
         </div>
       </div>
@@ -585,6 +638,7 @@ function DashboardPage() {
           onSubmit={handleSubmitBatch}
           formData={newBatchForm}
           setFormData={setNewBatchForm}
+          submitting={submitting}
         />
       )}
     </>
@@ -1037,9 +1091,13 @@ export default function FarmSenseApp() {
   }, {});
 
   const navigate = useNavigate();
-  const handleLogout = () => {
-    localStorage.removeItem("aifarm-auth");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
   };
 
   const PAGE_COMPONENTS = {
@@ -1113,3 +1171,37 @@ export default function FarmSenseApp() {
     </div>
   );
 }
+
+// ── Styles ──────────────────────────────────────────────────────────
+const RegisterBatchModalStyle = {
+  overlay: {
+    backgroundColor: 'rgba(28, 31, 22, 0.85)', // Using your Sidebar bg color with alpha
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000
+  },
+  modal: {
+    backgroundColor: '#f0ece4', // Content bg
+    borderRadius: '12px', padding: '32px', width: '100%', maxWidth: '500px',
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+  },
+  title: { color: '#1c1f16', margin: '4px 0', fontSize: '1.5rem' },
+  subtitle: { color: '#7a7060', fontSize: '0.9rem', marginBottom: '24px' },
+  group: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' },
+  label: {
+    color: '#1c1f16', fontSize: '0.85rem', fontWeight: '600', textAlign: 'left'
+  },
+  input: {
+    padding: '12px', borderRadius: '8px', border: '1px solid #7a7060',
+    backgroundColor: '#fff', fontSize: '0.95rem', outline: 'none'
+  },
+  footer: { display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '12px' },
+  cancelBtn: {
+    padding: '12px 20px', border: 'none', background: 'transparent',
+    color: '#7a7060', cursor: 'pointer', fontWeight: '500'
+  },
+  submitBtn: {
+    padding: '12px 24px', borderRadius: '8px', border: 'none',
+    backgroundColor: '#c8973a', color: '#fff', fontWeight: 'bold',
+    transition: 'all 0.2s'
+  }
+};

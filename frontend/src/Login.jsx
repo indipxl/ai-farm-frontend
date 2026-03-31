@@ -1,38 +1,54 @@
-import { useNavigate } from "react-router-dom"
-import { useState } from "react";
-
-// ── Colours extracted from the dashboard screenshot ──────────────────────────
-// Sidebar bg:   #1c1f16  (very dark olive-black)
-// Content bg:   #f0ece4  (warm cream / parchment)
-// Accent gold:  #c8973a  (warm amber / harvest gold)
-// Accent green: #4a7c59  (muted forest green)
-// Text dark:    #1c1f16
-// Text muted:   #7a7060
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './firebase';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
+  const [errors, setErrors] = useState({ email: '', password: '', general: '' });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("")
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    navigate("/dashboard");
-    // e.preventDefault();
-    // if (email === "admin@aifarm.com" && password === "admin123") {
-    //   localStorage.setItem("aifarm-auth", "true");
-    //   navigate("/dashboard");
-    // } else {
-    //   setError("Invalid email or password");
-    // }
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    // Reset errors before checking
+    const newErrors = { email: '', password: '', general: '' };
+    let hasError = false;
+
+    // ── 1. Inline Checks ──────────────────────────────────────────
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+      hasError = true;
+    }
+    if (!password.trim()) {
+      newErrors.password = "Password is required";
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
+      return;
+    }
+    setLoading(true);
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      newErrors.general = "Incorrect email or password. Please try again.";
+      setErrors(newErrors);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-  //   setTimeout(() => setLoading(false), 1800);
-  // };
+  // Demo fallback for styling
+  const handleDemoLogin = () => {
+    setEmail('admin@aifarm.com');
+    setPassword('admin123');
+  };
 
   return (
     <div style={styles.root}>
@@ -110,17 +126,16 @@ export default function LoginPage() {
                   placeholder="admin@aifarm.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  style={styles.input}
-
                 />
               </div>
+              {errors.email && <p style={{ color: "#c0392b", fontSize: '12px', textAlign: 'left' }}>{errors.email}</p>}
             </div>
 
             {/* Password */}
             <div style={styles.fieldGroup}>
               <div style={styles.labelRow}>
                 <label style={styles.label}>Password</label>
-                <a href="#" style={styles.forgotLink}>Forgot password?</a>
+                {/* <a href="#" style={styles.forgotLink}>Forgot password?</a> */}
               </div>
               <div style={styles.inputWrap}>
                 <span style={styles.inputIcon}>🔒</span>
@@ -129,8 +144,6 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  style={styles.input}
-
                 />
                 <button
                   type="button"
@@ -140,38 +153,18 @@ export default function LoginPage() {
                   {showPass ? "🙈" : "👁️"}
                 </button>
               </div>
+              {errors.password && <p style={{ color: "#c0392b", fontSize: '12px', textAlign: 'left' }}>{errors.password}</p>}
             </div>
-
-            {/* Remember me */}
-            <div style={styles.rememberRow}>
-              <input type="checkbox" id="remember" style={{ accentColor: "#4a7c59" }} />
-              <label htmlFor="remember" style={styles.rememberLabel}>Keep me signed in</label>
-            </div>
-            {/* ✅ Error message goes HERE — right before the button */}
-            {error && (
-              <p style={{ color: "#c0392b", fontSize: "0.82rem", fontFamily: "'Segoe UI', sans-serif", margin: "0.5rem 0" }}>
-                ⚠ {error}
+            {/* General Firebase Error (like wrong password) */}
+            {errors.general && (
+              <p style={{ ...styles.inlineError, textAlign: 'center', marginBottom: '10px' }}>
+                {errors.general}
               </p>
-            )}
-
-            {/* Sign In button */}
-            {/* <button onClick={handleLogin} style={styles.submitBtn}>
-              Sign In to Dashboard →
-            </button> */}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              style={{ ...styles.submitBtn, opacity: loading ? 0.75 : 1 }}
-              disabled={loading}
-            >
-              {loading ? (
-                <span style={styles.spinnerRow}>
-                  <span style={styles.spinner} /> Signing in…
-                </span>
-              ) : (
-                "Sign In to Dashboard →"
-              )}
+            )}            <button type="submit" disabled={loading} style={{ color: "white" }}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+            <button type="button" onClick={handleDemoLogin} style={{ color: "white" }}>
+              Demo Login
             </button>
 
           </form>
