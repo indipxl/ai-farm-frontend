@@ -42,7 +42,7 @@ export function useBatches() {
         throw new Error('Add batch failed: ' + errorText);
       }
       const newBatch = await response.json();
-      fetchBatches(); // Refresh list
+      fetchBatches();
       return newBatch;
     } catch (err) {
       console.error('Add batch error:', err);
@@ -50,5 +50,41 @@ export function useBatches() {
     }
   };
 
-  return { batches, loading, error, refetch: fetchBatches, addBatch };
+  const updateBatch = async (batchId, formData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/batches/${batchId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error('Update failed: ' + errorText);
+      }
+      const updatedBatch = await response.json();
+      fetchBatches();
+      return updatedBatch;
+    } catch (err) {
+      console.error('Update batch error:', err);
+      throw err;
+    }
+  };
+
+  const deleteBatch = async (batchId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/batches/${batchId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error('Delete failed: ' + errorText);
+      }
+      fetchBatches();
+    } catch (err) {
+      console.error('Delete batch error:', err);
+      throw err;
+    }
+  };
+
+  return { batches, loading, error, refetch: fetchBatches, addBatch, updateBatch, deleteBatch };
 }
