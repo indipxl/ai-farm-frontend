@@ -471,12 +471,16 @@ function RegisterBatchModal({ onClose, onSubmit, formData, setFormData, submitti
 // ═══════════════════════════════════════════════
 
 function DashboardPage() {
-  const { batches, addBatch } = useBatches();
+  const { batches, addBatch, updateBatch, deleteBatch } = useBatches();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [scanBatch, setScanBatch] = useState(null);
   const [qrBatch, setQrBatch] = useState(null);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [editBatch, setEditBatch] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteBatchId, setDeleteBatchId] = useState(null);
   const [newBatchForm, setNewBatchForm] = useState({ crop: "", location: "", planted: "", notes: "" });
 
   const handleOpenModal = () => {
@@ -602,30 +606,85 @@ function DashboardPage() {
               </div>
               <span className={`fs-pill ${pillCls[b.status]}`}>{statusLabel[b.status]}</span>
             </div>
-            {/* <div className="fs-batch-card__body">
+            <div className="fs-batch-card__body">
               <div className="fs-sensor-row">
-                {b.sensors.map(s => (
-                  <div key={s.name} className="fs-sensor-mini">
-                    <span className="fs-sensor-mini__icon">{s.icon}</span>
-                    <span className="fs-sensor-mini__name">{s.name}</span>
-                    <span className={`fs-sensor-mini__val fs-sensor-mini__val--${s.state}`}>{s.val}</span>
-                  </div>
-                ))}
+                <div className="fs-sensor-mini">
+                  <span className="fs-sensor-mini__icon">🌡️</span>
+                  <span className="fs-sensor-mini__name">Temp</span>
+                  <span className={`fs-sensor-mini__val fs-sensor-mini__val--${b.status === 'danger' ? 'warn' : 'ok'}`}>
+                    {b.status === 'danger' ? '34°C' : '28°C'}
+                  </span>
+                </div>
+                <div className="fs-sensor-mini">
+                  <span className="fs-sensor-mini__icon">💧</span>
+                  <span className="fs-sensor-mini__name">Moisture</span>
+                  <span className={`fs-sensor-mini__val fs-sensor-mini__val--${b.status === 'danger' ? 'bad' : 'ok'}`}>
+                    {b.status === 'danger' ? '42%' : '70%'}
+                  </span>
+                </div>
+                <div className="fs-sensor-mini">
+                  <span className="fs-sensor-mini__icon">🌤️</span>
+                  <span className="fs-sensor-mini__name">Humidity</span>
+                  <span className="fs-sensor-mini__val fs-sensor-mini__val--ok">68%</span>
+                </div>
+                <div className="fs-sensor-mini">
+                  <span className="fs-sensor-mini__icon">⚗️</span>
+                  <span className="fs-sensor-mini__name">pH</span>
+                  <span className={`fs-sensor-mini__val fs-sensor-mini__val--${b.status === 'danger' ? 'warn' : 'ok'}`}>
+                    {b.status === 'danger' ? '5.8' : '6.8'}
+                  </span>
+                </div>
               </div>
               <div className={`fs-ai-box ${aiBoxCls[b.status]} fs-ai-cam`}>
                 <div>
-                  <div className="fs-ai-box__tag"><span className="fs-ai-box__emoji">🔍</span> AI Camera Vision</div>
-                  <div className="fs-ai-box__result">{b.aiDetection}</div>
-                  <div className="fs-ai-box__conf">{b.aiConf}</div>
+                  <div className="fs-ai-box__tag">
+                    <span className="fs-ai-box__emoji">🔍</span> AI Camera Vision
+                  </div>
+                  <div className="fs-ai-box__result">
+                    {b.status === 'danger' ? 'Early Blight Detected' :
+                      b.status === 'warning' ? 'Aphid Presence' : 'No Disease Detected'}
+                  </div>
+                  <div className="fs-ai-box__conf">Confidence: 92% · 2h ago</div>
                 </div>
               </div>
-              <div className="fs-suggestion"><div className="fs-suggestion__label">AI Recommendation</div>{b.suggestion}</div>
-              <div className="fs-batch-actions">
-                <button className="fs-btn-scan" onClick={() => setScanBatch(b)}><span className="fs-btn-scan__dot">◉</span>Scan with Camera</button>
-                <button className="fs-btn-qr" onClick={() => setQrBatch(b)}>▦</button>
+              <div className="fs-suggestion">
+                <div className="fs-suggestion__label">AI Recommendation</div>
+                {b.status === 'danger' ? 'Apply copper fungicide within 24h. Remove affected leaves.' :
+                  b.status === 'warning' ? 'Monitor aphids. Consider neem oil spray.' :
+                    'Crop healthy. Maintain current irrigation schedule.'}
               </div>
-              <div className="fs-batch-card__last-scan">Last scan: {b.lastScan}</div>
-            </div> */}
+              <div className="fs-batch-actions">
+                <button className="fs-btn-scan" onClick={() => setScanBatch(b)}>
+                  <span className="fs-btn-scan__dot">◉</span>Scan with Camera
+                </button>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {/* <button
+                    className="fs-btn fs-btn--ghost fs-btn--sm"
+                    onClick={() => {
+                      setEditBatch(b);
+                      setShowEditModal(true);
+                    }}
+                    title="Edit batch"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    className="fs-btn fs-btn--danger fs-btn--sm"
+                    onClick={() => {
+                      setDeleteBatchId(b.id);
+                      setShowDeleteModal(true);
+                    }}
+                    title="Delete batch"
+                  >
+                    🗑️ Delete
+                  </button> */}
+                  <button className="fs-btn-qr" onClick={() => setQrBatch(b)} title="QR Code">
+                    ▦
+                  </button>
+                </div>
+              </div>
+              <div className="fs-batch-card__last-scan">Last scan: Today 08:42 AM</div>
+            </div>
           </div>
         ))}
       </div>
@@ -641,7 +700,203 @@ function DashboardPage() {
           submitting={submitting}
         />
       )}
+      {showEditModal && editBatch && (
+        <EditBatchModal
+          batch={editBatch}
+          onClose={() => setShowEditModal(false)}
+          onSubmit={updateBatch}
+        />
+      )}
+      {showDeleteModal && (
+        <DeleteBatchModal
+          batchId={deleteBatchId}
+          onClose={() => setShowDeleteModal(false)}
+          onDelete={deleteBatch}
+        />
+      )}
     </>
+  );
+}
+function EditBatchModal({ batch, onClose, onSubmit }) {
+  const [formData, setFormData] = useState({
+    crop: batch.crop,
+    location: batch.location,
+    planted: batch.planted.split(' ')[0], // Extract YYYY-MM-DD
+    notes: batch.notes || '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await onSubmit(batch.id, formData);
+      toast.success('Batch updated successfully!');
+      onClose();
+    } catch (error) {
+      toast.error('Failed to update batch.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fs-modal-overlay" onClick={onClose}>
+      <div className="fs-modal" onClick={(e) => e.stopPropagation()}>
+        <div style={{ padding: '24px', textAlign: 'center' }}>
+          <h2 style={{ margin: '0 0 8px 0', fontSize: '1.4rem', color: 'var(--charcoal)' }}>Edit Batch</h2>
+          <p style={{ color: 'var(--text-dim)', margin: 0 }}>Update {batch.id}</p>
+        </div>
+        <form onSubmit={handleSubmit} style={{ padding: '0 24px 24px' }}>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px', color: 'var(--charcoal)' }}>Crop Name</label>
+              <input
+                name="crop"
+                value={formData.crop}
+                onChange={handleChange}
+                className="fs-search-input"
+                disabled={submitting}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px', color: 'var(--charcoal)' }}>Location</label>
+              <input
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                className="fs-search-input"
+                disabled={submitting}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px', color: 'var(--charcoal)' }}>Planted Date</label>
+              <input
+                type="date"
+                name="planted"
+                value={formData.planted}
+                onChange={handleChange}
+                className="fs-search-input"
+                disabled={submitting}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px', color: 'var(--charcoal)' }}>Notes</label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                rows="3"
+                className="fs-search-input"
+                style={{ resize: 'vertical', fontFamily: 'DM Sans, sans-serif' }}
+                disabled={submitting}
+              />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                padding: '10px 20px',
+                border: '1px solid var(--border)',
+                background: 'var(--cream2)',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                color: 'var(--charcoal)'
+              }}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              style={{
+                padding: '10px 20px',
+                background: 'var(--gold)',
+                color: 'var(--charcoal)',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                cursor: submitting ? 'not-allowed' : 'pointer'
+              }}
+              disabled={submitting}
+            >
+              {submitting ? 'Saving...' : 'Update Batch'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function DeleteBatchModal({ batchId, onClose, onDelete }) {
+  const [confirming, setConfirming] = useState(false);
+
+  const handleDelete = async () => {
+    setConfirming(true);
+    try {
+      await onDelete(batchId);
+      toast.success('Batch deleted successfully!');
+      onClose();
+    } catch (error) {
+      toast.error('Failed to delete batch.');
+    } finally {
+      setConfirming(false);
+    }
+  };
+
+  return (
+    <div className="fs-modal-overlay" onClick={onClose}>
+      <div className="fs-modal" onClick={(e) => e.stopPropagation()}>
+        <div style={{ padding: '32px 24px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '16px', color: 'var(--red)' }}>🗑️</div>
+          <h2 style={{ margin: '0 0 8px 0', fontSize: '1.4rem', color: 'var(--charcoal)' }}>Delete Batch</h2>
+          <p style={{ color: 'var(--text-dim)', margin: 0, lineHeight: 1.5 }}>
+            Are you sure you want to delete this batch? This action cannot be undone.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', padding: '0 24px 24px' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              padding: '10px 20px',
+              border: '1px solid var(--border)',
+              background: 'var(--cream2)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              color: 'var(--charcoal)',
+              flex: 1
+            }}
+            disabled={confirming}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            style={{
+              padding: '10px 20px',
+              background: 'var(--red)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: '600',
+              cursor: confirming ? 'not-allowed' : 'pointer',
+              flex: 1
+            }}
+            disabled={confirming}
+          >
+            {confirming ? 'Deleting...' : 'Yes, Delete'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

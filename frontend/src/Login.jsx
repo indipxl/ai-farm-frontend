@@ -163,9 +163,9 @@ export default function LoginPage() {
             )}            <button type="submit" disabled={loading} style={{ color: "white" }}>
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
-            <button type="button" onClick={handleDemoLogin} style={{ color: "white" }}>
+            {/* <button type="button" onClick={handleDemoLogin} style={{ color: "white" }}>
               Demo Login
-            </button>
+            </button> */}
 
           </form>
 
