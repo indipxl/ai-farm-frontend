@@ -1,0 +1,135 @@
+import { useState } from "react";
+
+const MAP_BLOCKS = [
+  { id: "A1", label: "A1", crop: "🍅", status: "danger",  name: "Tomatoes"   }, { id: "A2", label: "A2", crop: "🍅", status: "danger",  name: "Tomatoes"   },
+  { id: "A3", label: "A3", crop: "🥬", status: "warning", name: "Lettuce"    }, { id: "A4", label: "A4", crop: "🥬", status: "healthy", name: "Lettuce"    },
+  { id: "A5", label: "A5", crop: "",   status: "empty",   name: ""           }, { id: "A6", label: "A6", crop: "",   status: "empty",   name: ""           },
+  { id: "B1", label: "B1", crop: "🍅", status: "warning", name: "Tomatoes"   }, { id: "B2", label: "B2", crop: "🫑", status: "healthy", name: "Peppers"    },
+  { id: "B3", label: "B3", crop: "🫑", status: "healthy", name: "Peppers"    }, { id: "B4", label: "B4", crop: "🥒", status: "healthy", name: "Cucumber"   },
+  { id: "B5", label: "B5", crop: "🥒", status: "healthy", name: "Cucumber"   }, { id: "B6", label: "B6", crop: "",   status: "empty",   name: ""           },
+  { id: "C1", label: "C1", crop: "🫛", status: "healthy", name: "Long Beans" }, { id: "C2", label: "C2", crop: "🫛", status: "healthy", name: "Long Beans" },
+  { id: "C3", label: "C3", crop: "🍓", status: "healthy", name: "Strawberry" }, { id: "C4", label: "C4", crop: "🍓", status: "healthy", name: "Strawberry" },
+  { id: "C5", label: "C5", crop: "🥬", status: "warning", name: "Lettuce"    }, { id: "C6", label: "C6", crop: "",   status: "empty",   name: ""           },
+  { id: "D1", label: "D1", crop: "",   status: "empty",   name: ""           }, { id: "D2", label: "D2", crop: "🫑", status: "healthy", name: "Peppers"    },
+  { id: "D3", label: "D3", crop: "🫑", status: "healthy", name: "Peppers"    }, { id: "D4", label: "D4", crop: "🥒", status: "healthy", name: "Cucumber"   },
+  { id: "D5", label: "D5", crop: "",   status: "empty",   name: ""           }, { id: "D6", label: "D6", crop: "",   status: "empty",   name: ""           },
+];
+
+const THREAT_LOG = [
+  { icon: "🔴", title: "Early Blight spreading from Block A1 → A2",       desc: "Fungal pathogen detected in 2 adjacent blocks. Wind direction NE at 12km/h increases spread risk toward Block B1.", meta: "Detected 2h ago · High risk",      type: "danger"   },
+  { icon: "🟡", title: "Aphid colony movement detected — Block A3 → C5",  desc: "Low-density aphid population migrated across 3 blocks. Natural predator activity noted in Block B area.",          meta: "Detected 6h ago · Moderate risk", type: "warn"     },
+  { icon: "🟡", title: "Temperature stress risk — Blocks A1, A2, B1",     desc: "Sustained high temperature (>33°C) for 3 days creates conditions favourable for pest activity. Monitor closely.",  meta: "Ongoing · Moderate risk",         type: "warn"     },
+  { icon: "🟢", title: "Whitefly threat resolved — Block D2, D3",         desc: "Whitefly population declined after neem oil treatment applied 4 days ago. No further spread detected.",            meta: "Resolved 2 days ago · Low risk",  type: "resolved" },
+];
+
+export default function DiseaseMapPage() {
+  const [timeSlider, setTimeSlider] = useState(100);
+  const blockCls = { healthy: "fs-map-block--healthy", warning: "fs-map-block--warning", danger: "fs-map-block--danger", empty: "fs-map-block--empty" };
+
+  return (
+    <>
+      <div className="fs-page-header">
+        <div>
+          <div className="fs-page-eyebrow">Pest &amp; Disease Spread Tracker</div>
+          <h1 className="fs-page-title">Disease <em>Movement</em> Map</h1>
+          <p className="fs-page-sub">Track spread vectors across all blocks · Use timeline to review historical movement</p>
+        </div>
+      </div>
+
+      <div className="fs-stat-strip">
+        <div className="fs-stat-card fs-stat-card--red"><div className="fs-stat-card__label">Active Threats</div><div className="fs-stat-card__val fs-stat-card__val--danger">2</div><div className="fs-stat-card__meta">Spreading across blocks</div><span className="fs-stat-tag fs-stat-tag--danger">High risk</span></div>
+        <div className="fs-stat-card fs-stat-card--amber"><div className="fs-stat-card__label">Blocks at Risk</div><div className="fs-stat-card__val fs-stat-card__val--warn">4</div><div className="fs-stat-card__meta">Within spread radius</div><span className="fs-stat-tag fs-stat-tag--warn">Monitor</span></div>
+        <div className="fs-stat-card fs-stat-card--gold"><div className="fs-stat-card__label">Spread Velocity</div><div className="fs-stat-card__val">1.2</div><div className="fs-stat-card__meta">Blocks/day (Early Blight)</div><span className="fs-stat-tag fs-stat-tag--warn">Increasing</span></div>
+        <div className="fs-stat-card fs-stat-card--green"><div className="fs-stat-card__label">Resolved Threats</div><div className="fs-stat-card__val">1</div><div className="fs-stat-card__meta">Whitefly — Block D</div><span className="fs-stat-tag fs-stat-tag--good">Treated</span></div>
+      </div>
+
+      <div className="fs-grid-2" style={{ alignItems: "start" }}>
+        <div>
+          <div className="fs-section-row">
+            <div />
+            <button className="fs-btn fs-btn--ghost fs-btn--sm">⬇ Export Map</button>
+          </div>
+
+          {/* Farm block map */}
+          <div className="fs-card" style={{ marginBottom: 18 }}>
+            <div className="fs-card__header">
+              <div>
+                <div className="fs-card__title">Farm Block Map</div>
+                <div className="fs-card__sub">Hover blocks for detail · Pulsing = active threat</div>
+              </div>
+            </div>
+            <div className="fs-farm-map">
+              <div className="fs-map-grid">
+                {MAP_BLOCKS.map(blk => (
+                  <div key={blk.id} className={`fs-map-block ${blockCls[blk.status]}`} title={`${blk.label}: ${blk.name || "Empty"}`}>
+                    <div className="fs-map-block__label">{blk.label}</div>
+                    {blk.crop && <div className="fs-map-block__crop">{blk.crop}</div>}
+                    <div className="fs-map-block__status">{blk.status !== "empty" ? blk.status : "–"}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="fs-map-legend">
+                <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--red)" }} />Critical</div>
+                <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--amber)" }} />Warning</div>
+                <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--green-lt)" }} />Healthy</div>
+                <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--cream3)" }} />Unplanted</div>
+              </div>
+            </div>
+            <div style={{ padding: "14px 18px" }}>
+              <div className="fs-time-slider">
+                <label>Timeline <span>{timeSlider}% — {timeSlider === 100 ? "Now (Live)" : `${Math.round((100 - timeSlider) / 10)} days ago`}</span></label>
+                <input type="range" min={0} max={100} value={timeSlider} onChange={e => setTimeSlider(Number(e.target.value))} />
+              </div>
+            </div>
+          </div>
+
+          {/* Spread prediction */}
+          <div className="fs-card">
+            <div className="fs-card__header">
+              <div>
+                <div className="fs-card__title">Spread Prediction</div>
+                <div className="fs-card__sub">AI risk forecast — next 72 hours</div>
+              </div>
+            </div>
+            <div className="fs-card__body">
+              <div className="fs-suggestion">
+                <div className="fs-suggestion__label">AI Spread Forecast</div>
+                At current velocity and NE wind direction (12 km/h), Early Blight from Block A1–A2 has a <strong>73% probability</strong> of reaching Block B1 within 48 hours. Immediate fungicide treatment on Blocks A1, A2, and prophylactic spray on B1 strongly recommended.
+              </div>
+              <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {[
+                  { block: "A1", risk: "Critical",  col: "var(--red)"   },
+                  { block: "A2", risk: "Critical",  col: "var(--red)"   },
+                  { block: "B1", risk: "High risk", col: "var(--amber)" },
+                  { block: "A3", risk: "Watch",     col: "var(--amber)" },
+                ].map(r => (
+                  <div key={r.block} style={{ background: r.col + "18", border: `1px solid ${r.col}44`, borderRadius: 8, padding: "6px 12px", textAlign: "center" }}>
+                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: "1rem" }}>{r.block}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.6rem", color: r.col }}>{r.risk}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Threat log */}
+        <div>
+          <div className="fs-section-row" style={{ marginTop: 20 }}>
+            <div className="fs-section-label">Active Threat Log</div>
+          </div>
+          {THREAT_LOG.map((t, i) => (
+            <div key={i} className={`fs-threat-entry${t.type === "danger" ? " fs-threat-entry--danger" : t.type === "warn" ? " fs-threat-entry--warn" : ""}`}>
+              <span className="fs-threat-entry__icon">{t.icon}</span>
+              <div>
+                <div className="fs-threat-entry__title">{t.title}</div>
+                <div className="fs-threat-entry__desc">{t.desc}</div>
+                <div className="fs-threat-entry__meta">{t.meta}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
