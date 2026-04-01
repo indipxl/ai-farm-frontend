@@ -22,12 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-<<<<<<< HEAD
-=======
 
 # dotenv environment variables file
 .env
+*.pyc
 
 # Ignore Google Cloud Service Account keys
-# *.json
->>>>>>> 020d8eba92ec0941148655b4b0a8584b00c1d8ca
+gaia-sabah-c3-group2-aifarm-02d42c9eeb6a.json
