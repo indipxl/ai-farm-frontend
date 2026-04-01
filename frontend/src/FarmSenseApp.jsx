@@ -181,7 +181,7 @@ function BaseTopbar({ children, className = "", style = {} }) {
 
       <div className="fs-topbar__right">
         <span className="fs-topbar__sync">IoT sync: <span>● Live</span></span>
-        <span className="fs-alert-badge">2 Alerts</span>
+        {/* <span className="fs-alert-badge">2 Alerts</span> */}
       </div>
     </div>
   );
@@ -1387,12 +1387,8 @@ export default function FarmSenseApp() {
                 >
                   <span className="fs-nav-item__icon">{item.icon}</span>
                   <span className="fs-nav-item__label">{item.label}</span>
-                  {item.page === "Dashboard" && alertCount > 0 && (
-                    <span className="fs-nav-item__badge">{alertCount}</span>
-                  )}
-                  {item.page === "Disease Map" && (
-                    <span className="fs-nav-item__badge">2</span>
-                  )}
+                  {item.page === "Dashboard" && alertCount > 0}
+                  {item.page === "Disease Map"}
                 </button>
               ))}
             </div>
