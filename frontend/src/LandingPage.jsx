@@ -51,9 +51,42 @@ const TESTIMONIALS = [
 ];
 
 const PLANS = [
-  { name: "Starter", price: "RM 299", period: "/ month", desc: "For small farms just getting started", highlight: false, cta: "Get Started", features: ["Up to 2 farm zones", "AI crop detection", "Basic soil monitoring", "Weather alerts", "Email support"] },
-  { name: "Professional", price: "RM 699", period: "/ month", desc: "For serious farm operations", highlight: true, cta: "Start Free Trial", features: ["Up to 10 farm zones", "Full AI detection suite", "Advanced soil AI", "Disease mapping", "Batch management", "Priority support"] },
-  { name: "Enterprise", price: "Custom", period: "", desc: "For large-scale agri businesses", highlight: false, cta: "Contact Sales", features: ["Unlimited zones", "Custom AI models", "API access", "Dedicated IoT setup", "On-site training", "24/7 SLA support"] },
+  { 
+    name: "Personal", 
+    price: "RM 49", 
+    period: "/ month", 
+    desc: "For hobbyists and home gardeners", 
+    highlight: false, 
+    cta: "Get Started", 
+    features: ["1 Farm zone", "Basic AI identification", "Individual management", "Community support"] 
+  },
+  { 
+    name: "Micro-Farm", 
+    price: "RM 129", 
+    period: "/ month", 
+    desc: "Perfect for market sellers", 
+    highlight: false, 
+    cta: "Get Started", 
+    features: ["3 Farm zones", "AI monitoring", "Individual management", "Email support"] 
+  },
+  { 
+    name: "Professional", 
+    price: "RM 299", 
+    period: "/ month", 
+    desc: "For serious farm owners", 
+    highlight: true, 
+    cta: "Start Free Trial", 
+    features: ["10 Farm zones", "Full AI suite", "Team management (3 users)", "Priority support"] 
+  },
+  { 
+    name: "Enterprise", 
+    price: "Custom", 
+    period: "", 
+    desc: "For plantations and corps", 
+    highlight: false, 
+    cta: "Contact Sales", 
+    features: ["Unlimited zones", "Custom AI models", "Multi-company management", "Dedicated manager"] 
+  },
 ];
 
 // ── Navbar / Topbar ───────────────────────────────────────────────────────────
