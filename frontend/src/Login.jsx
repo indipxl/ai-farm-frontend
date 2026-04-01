@@ -126,6 +126,7 @@ export default function LoginPage() {
                   placeholder="admin@aifarm.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  style={styles.input}
                 />
               </div>
               {errors.email && <p style={{ color: "#c0392b", fontSize: '12px', textAlign: 'left' }}>{errors.email}</p>}
@@ -144,6 +145,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  style={styles.input}
                 />
                 <button
                   type="button"
@@ -157,7 +159,7 @@ export default function LoginPage() {
             </div>
             {/* General Firebase Error (like wrong password) */}
             {errors.general && (
-              <p style={{ ...styles.inlineError, textAlign: 'center', marginBottom: '10px' }}>
+              <p style={{ ...styles.inlineError, textAlign: 'center', marginBottom: '10px', color: "#c0392b", fontSize: '12px' }}>
                 {errors.general}
               </p>
             )}            <button type="submit" disabled={loading} style={{ color: "white" }}>
