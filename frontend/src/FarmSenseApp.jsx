@@ -380,7 +380,7 @@ function RegisterBatchModal({ onClose, onSubmit, formData, setFormData, submitti
       <div className="fs-modal" onClick={e => e.stopPropagation()} style={RegisterBatchModalStyle.modal}>
 
         <div style={RegisterBatchModalStyle.header}>
-          <h2 style={RegisterBatchModalStyle.title}>Register New Batch</h2>
+          <h2 style={RegisterBatchModalStyle.title}>Create Batch</h2>
           <p style={RegisterBatchModalStyle.subtitle}>Enter details to start tracking this crop cycle.</p>
         </div>
 
@@ -392,7 +392,7 @@ function RegisterBatchModal({ onClose, onSubmit, formData, setFormData, submitti
               <input
                 style={RegisterBatchModalStyle.input}
                 name="crop"
-                placeholder="e.g. 🌴 Oil Palm"
+                placeholder="Tomato"
                 value={formData.crop}
                 onChange={handleChange}
                 disabled={submitting}
@@ -405,7 +405,7 @@ function RegisterBatchModal({ onClose, onSubmit, formData, setFormData, submitti
               <input
                 style={RegisterBatchModalStyle.input}
                 name="location"
-                placeholder="e.g. Sabah Section A1"
+                placeholder="Block A · Row 1–12"
                 value={formData.location}
                 onChange={handleChange}
                 disabled={submitting}
@@ -457,7 +457,7 @@ function RegisterBatchModal({ onClose, onSubmit, formData, setFormData, submitti
               }}
               disabled={!isValid || submitting}
             >
-              {submitting ? 'Processing...' : 'Confirm Registration'}
+              {submitting ? 'Processing...' : 'Create'}
             </button>
           </div>
         </form>
@@ -569,7 +569,7 @@ function DashboardPage() {
       <div className="fs-section-row">
         <div className="fs-section-label">Registered Batches</div>
         <div>
-          <button className="fs-btn fs-btn--gold fs-btn--sm" onClick={handleOpenModal}>+ Register New Batch</button>
+          <button className="fs-btn fs-btn--gold fs-btn--sm" onClick={handleOpenModal}>+ Create Batch</button>
         </div >
       </div>
 
