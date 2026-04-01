@@ -1145,12 +1145,12 @@ function DiseaseMapPage() {
                 <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--cream3)" }} />Unplanted</div>
               </div>
             </div>
-            <div style={{ padding: "14px 18px" }}>
+            {/* <div style={{ padding: "14px 18px" }}>
               <div className="fs-time-slider">
                 <label>Timeline <span>{timeSlider}% — {timeSlider === 100 ? "Now (Live)" : `${Math.round((100 - timeSlider) / 10)} days ago`}</span></label>
                 <input type="range" min={0} max={100} value={timeSlider} onChange={e => setTimeSlider(Number(e.target.value))} />
               </div>
-            </div>
+            </div> */}
           </div>
 
           <div className="fs-card">
