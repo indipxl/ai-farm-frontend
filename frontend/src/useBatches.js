@@ -20,6 +20,7 @@ export function useBatches() {
         throw new Error('Failed to fetch: ' + errorText);
       }
       const result = await response.json();
+      console.log('Fetched batches data:', result);
       setBatches(result.batches || []);
     } catch (err) {
       console.error('Fetch batches error:', err);

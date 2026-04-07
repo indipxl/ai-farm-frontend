@@ -1,32 +1,22 @@
-import { useState } from "react";
-
-const CROP_PROFILES = [
-  {
-    id: 1, emoji: "🍅", name: "Tomatoes (Summer)", type: "Solanum lycopersicum", assignedTo: "BATCH-001",
-    params: [{ name: "Soil Moisture", min: 55, max: 80, unit: "%", pct: 70 }, { name: "Temperature", min: 21, max: 29, unit: "°C", pct: 60 }, { name: "Humidity", min: 60, max: 75, unit: "%", pct: 68 }, { name: "Soil pH", min: 6.0, max: 6.8, unit: "", pct: 55 }],
-    alert: "Alert if moisture < 55% or > 85%", notes: "Spray copper fungicide every 14 days preventatively."
-  },
-  {
-    id: 2, emoji: "🥬", name: "Lettuce (Butterhead)", type: "Lactuca sativa", assignedTo: "BATCH-002",
-    params: [{ name: "Soil Moisture", min: 65, max: 75, unit: "%", pct: 65 }, { name: "Temperature", min: 16, max: 24, unit: "°C", pct: 45 }, { name: "Humidity", min: 60, max: 80, unit: "%", pct: 72 }, { name: "Soil pH", min: 6.0, max: 7.0, unit: "", pct: 60 }],
-    alert: "Alert if temp > 28°C (bolting risk)", notes: "Avoid overhead watering to prevent fungal issues."
-  },
-  {
-    id: 3, emoji: "🫑", name: "Bell Peppers", type: "Capsicum annuum", assignedTo: "BATCH-003, BATCH-D2",
-    params: [{ name: "Soil Moisture", min: 60, max: 70, unit: "%", pct: 60 }, { name: "Temperature", min: 24, max: 30, unit: "°C", pct: 65 }, { name: "Humidity", min: 50, max: 70, unit: "%", pct: 58 }, { name: "Soil pH", min: 6.0, max: 6.8, unit: "", pct: 55 }],
-    alert: "Alert if humidity > 80% (mould risk)", notes: "Side-dress with potassium when fruiting starts."
-  },
-  {
-    id: 4, emoji: "🍓", name: "Strawberries", type: "Fragaria × ananassa", assignedTo: "BATCH-005",
-    params: [{ name: "Soil Moisture", min: 60, max: 70, unit: "%", pct: 62 }, { name: "Temperature", min: 15, max: 26, unit: "°C", pct: 42 }, { name: "Humidity", min: 55, max: 75, unit: "%", pct: 60 }, { name: "Soil pH", min: 5.5, max: 6.5, unit: "", pct: 45 }],
-    alert: "Alert if rain >20mm predicted (botrytis)", notes: "Use drip irrigation only. Keep foliage dry."
-  },
-];
+import { useState, useEffect } from "react";
+import { useCrops } from "../useCrops";
 
 export default function CropProfilesPage() {
+  const { crops: CROP_PROFILES = [] } = useCrops();
   const [selected, setSelected] = useState(null);
   const [vals, setVals] = useState({ moisture: 70, temp: 26, humidity: 65, ph: 64 });
   const profile = selected ? CROP_PROFILES.find(p => p.id === selected) : null;
+
+  useEffect(() => {
+    if (profile?.sensor_data) {
+      setVals({
+        moisture: profile.sensor_data.soil?.moisture || 0,
+        temp: profile.sensor_data.air?.temp || 0,
+        humidity: profile.sensor_data.air?.hum || 0,
+        ph: profile.sensor_data.soil?.ph ? profile.sensor_data.soil.ph * 10 : 0
+      });
+    }
+  }, [profile]);
 
   return (
     <>
@@ -70,7 +60,7 @@ export default function CropProfilesPage() {
                 </div>
                 <div className="fs-profile-card__body">
                   <div className="fs-recipe-params">
-                    {p.params.map(param => (
+                    {p.params && p.params.map(param => (
                       <div key={param.name}>
                         <div className="fs-recipe-param__row">
                           <span className="fs-recipe-param__name">{param.name}</span>
@@ -83,7 +73,7 @@ export default function CropProfilesPage() {
                   </div>
                 </div>
                 <div className="fs-profile-card__footer">
-                  <div className="fs-profile-card__assigned">Assigned to <strong>{p.assignedTo}</strong></div>
+                  <div className="fs-profile-card__assigned">Assigned to <strong>{p.batch_id || p.assignedTo || 'Unassigned'}</strong></div>
                   <button className="fs-btn fs-btn--ghost fs-btn--sm" onClick={e => { e.stopPropagation(); setSelected(p.id); }}>Edit Crop Profile</button>
                 </div>
               </div>
@@ -153,7 +143,7 @@ export default function CropProfilesPage() {
               <div className="fs-card__body">
                 <div className="fs-suggestion" style={{ marginBottom: 10 }}>
                   <div className="fs-suggestion__label">Optimisation</div>
-                  Your moisture threshold (current: {vals.moisture}%) is slightly high for {profile.name}. Research suggests {profile.params[0].min}–{profile.params[0].max}% reduces fungal risk without stress.
+                  Your moisture threshold (current: {vals.moisture}%) is slightly high for {profile.name}. Research suggests {profile.params?.[0]?.min ?? 0}–{profile.params?.[0]?.max ?? 0}% reduces fungal risk without stress.
                 </div>
                 <div className="fs-suggestion">
                   <div className="fs-suggestion__label">Seasonal Adjustment</div>
