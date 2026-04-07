@@ -16,7 +16,7 @@ export const useCrops = () => {
     console.log('Executing fetchCrops...');
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/crops`);
+      const response = await fetch(`${API_BASE_URL}/api/crops/`);
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`Failed to fetch: ${response.status} ${errText}`);
@@ -34,7 +34,7 @@ export const useCrops = () => {
   };
 
   const createCrop = async (crop) => {
-    const response = await fetch(`${API_BASE_URL}/api/create-crops`, {
+    const response = await fetch(`${API_BASE_URL}/api/crops/create-crops`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(crop)

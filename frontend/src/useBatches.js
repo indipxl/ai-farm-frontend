@@ -14,7 +14,7 @@ export function useBatches() {
   const fetchBatches = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/batches`);
+      const response = await fetch(`${API_BASE_URL}/api/batches/`);
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error('Failed to fetch: ' + errorText);
@@ -33,7 +33,7 @@ export function useBatches() {
 
   const addBatch = async (formData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/register-batch`, {
+      const response = await fetch(`${API_BASE_URL}/api/batches/register-batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
