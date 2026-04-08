@@ -8,10 +8,7 @@ router = APIRouter(prefix="/crops", tags=["crops"])
 
 class CropCreate(BaseModel):
     name: str
-    emoji: str
-    type: str
     status: str = "Active"
-    params: List[dict] = []
     alert: Optional[str] = None
     notes: Optional[str] = None
     batch_id: str
@@ -20,10 +17,7 @@ class CropCreate(BaseModel):
 class CropResponse(BaseModel):
     id: str
     name: str
-    emoji: str
-    type: str
     status: str
-    params: List[dict]
     alert: Optional[str]
     notes: Optional[str]
     batch_id: str
@@ -38,10 +32,7 @@ async def create_crop(crop: CropCreate):
     try:
         doc_ref = db.collection('crops').add({
             'name': crop.name,
-            'emoji': crop.emoji,
-            'type': crop.type,
             'status': crop.status,
-            'params': crop.params,
             'alert': crop.alert,
             'notes': crop.notes,
             'batch_id': crop.batch_id,
@@ -117,10 +108,7 @@ async def update_crop(crop_id: str, crop: CropCreate):
         doc_ref = db.collection('crops').document(crop_id)
         doc_ref.update({
             'name': crop.name,
-            'emoji': crop.emoji,
-            'type': crop.type,
             'status': crop.status,
-            'params': crop.params,
             'alert': crop.alert,
             'notes': crop.notes,
             'batch_id': crop.batch_id,
