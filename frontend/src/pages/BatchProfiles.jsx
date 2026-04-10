@@ -55,7 +55,7 @@ export default function BatchProfilesPage() {
         return true;
     });
 
-    const statusLabel = { healthy: "✓ Healthy", warning: "⚡ Warning", danger: "⚠ Critical" };
+    const statusLabel = { healthy: "Healthy", warning: "Warning", danger: "Critical" };
     const aiBoxCls = { healthy: "", warning: "fs-ai-box--warn", danger: "fs-ai-box--alert" };
     const cardCls = { healthy: "", warning: "fs-batch-card--warn", danger: "fs-batch-card--danger" };
     const barCls = { healthy: "fs-batch-card__bar--healthy", warning: "fs-batch-card__bar--warning", danger: "fs-batch-card__bar--danger" };
@@ -69,12 +69,8 @@ export default function BatchProfilesPage() {
         return new Intl.DateTimeFormat('en-GB', {
             day: 'numeric',
             month: 'long',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric',
-            hour12: true,
-        }).format(date).replace(',', ' at');
+            year: 'numeric'
+        }).format(date);
     };
 
     return (
