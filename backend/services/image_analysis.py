@@ -62,7 +62,7 @@ chain = prompt | llm
 def encode_image(image_bytes: bytes) -> str:
     return base64.b64encode(image_bytes).decode()
 
-@router.post("/analysis")
+@router.post("/upload-image-analysis")
 async def analysis(file: UploadFile = File(...)):
     try:
         # Read and encode image
@@ -108,22 +108,6 @@ class ImageAnalysisCreate(BaseModel):
     suggestions: list
 
 db = firestore.client()
-
-@router.post("/upload-image-analysis")
-async def upload_image_analysis(data: ImageAnalysisCreate):
-    try:
-        doc_ref = db.collection('image_analysis').add({
-            'batch_id': data.batch_id,
-            'detection': data.detection,
-            'confidence': data.confidence,
-            'status': data.status,
-            'detail': data.detail,
-            'suggestions': data.suggestions,
-            'timestamp': firestore.SERVER_TIMESTAMP
-        })
-        return {"success": True, "id": doc_ref[1].id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/create-image-analysis")
 async def create_image_analysis(data: ImageAnalysisCreate):
