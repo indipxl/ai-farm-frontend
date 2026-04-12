@@ -4,6 +4,7 @@ import ScanModal from "../components/ScanModal";
 import QRModal from "../components/QRModal";
 import RegisterBatchModal from "../components/RegisterBatchModal";
 import toast from 'react-hot-toast';
+import { formatDistanceToNow } from 'date-fns';
 import "../farmsense.css";
 
 export default function BatchProfilesPage() {
@@ -175,10 +176,13 @@ export default function BatchProfilesPage() {
                                         <span className="fs-ai-box__emoji">🔍</span> AI Camera Vision
                                     </div>
                                     <div className="fs-ai-box__result">
-                                        {b.status === 'danger' ? 'Early Blight Detected' :
-                                            b.status === 'warning' ? 'Aphid Presence' : 'No Disease Detected'}
+                                        {b.image_analysis?.detection ?? 'No Scan Data'}
                                     </div>
-                                    <div className="fs-ai-box__conf">Confidence: 92% · 2h ago</div>
+                                    <div className="fs-ai-box__conf">
+                                        {b.image_analysis
+                                            ? `Confidence: ${b.image_analysis.confidence}% · ${formatDistanceToNow(new Date(b.image_analysis.timestamp))} ago`
+                                            : '--'}
+                                    </div>
                                 </div>
                             </div>
                             <div className="fs-suggestion">
