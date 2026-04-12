@@ -1,4 +1,5 @@
-import { useState } from 'react'; \nimport toast from 'react-hot-toast';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function EditBatchModal({ batch, onClose, onSubmit }) {
     const [formData, setFormData] = useState({

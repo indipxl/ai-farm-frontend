@@ -13,14 +13,14 @@ export default function DashboardPage() {
     const [scanBatch, setScanBatch] = useState(null);
     const [qrBatch, setQrBatch] = useState(null);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
-    const [newBatchForm, setNewBatchForm] = useState({ crop: "", location: "", planted: "", notes: "" });
+    const [newBatchForm, setNewBatchForm] = useState({ crop: "", location: "", notes: "" });
     const [submitting, setSubmitting] = useState(false);
 
     const handleOpenModal = () => setShowRegisterModal(true);
 
     const handleCloseModal = () => {
         setShowRegisterModal(false);
-        setNewBatchForm({ crop: "", location: "", planted: "", notes: "" });
+        setNewBatchForm({ crop: "", location: "", notes: "" });
     };
 
     const handleFormChange = (e) => {
@@ -101,7 +101,7 @@ export default function DashboardPage() {
                             <div>
                                 <div className="fs-batch-card__crop">{b.crop}</div>
                                 <div className="fs-batch-card__loc">📍 {b.location}</div>
-                                <div className="fs-batch-card__id">{b.id} · Planted {b.planted}</div>
+                                <div className="fs-batch-card__id">{b.id} · Planted {b.created_at}</div>
                             </div>
                             <span className={`fs-pill ${pillCls[b.status]}`}>{statusLabel[b.status]}</span>
                         </div>

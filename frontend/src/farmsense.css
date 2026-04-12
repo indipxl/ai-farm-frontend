@@ -129,7 +129,7 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--charco
 .fs-no-results__desc{font-size:0.85rem;color:var(--text-dim);}
 .fs-filter-pill{padding:5px 13px;border-radius:20px;font-size:0.7rem;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
 .fs-filter-pill:hover,.fs-filter-pill--active{background:var(--charcoal);color:#fff;border-color:var(--charcoal);}
-.fs-suggestion{background:linear-gradient(135deg,#fffbe8,#fff6cc);border:1px solid var(--border-gold);border-radius:10px;padding:11px 13px;font-size:0.78rem;color:var(--dark);line-height:1.55;height: 100px;}
+.fs-suggestion{background:linear-gradient(135deg,#fffbe8,#fff6cc);border:1px solid var(--border-gold);border-radius:10px;padding:11px 13px;font-size:0.78rem;color:var(--dark);line-height:1.55;}
 .fs-suggestion__label{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--gold-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
 .fs-progress-bar-wrap{margin-top:6px;}
 .fs-progress-label{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:0.59rem;color:var(--text-dim);margin-bottom:4px;}
@@ -326,9 +326,10 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--charco
   .fs-topbar{padding:0 16px;}
 }
 
-@media (max-width: 900px) {
-  .fs-batch-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 600px) {
-  .fs-batch-grid { grid-template-columns: 1fr; }
-}
+.fs-form-group { margin-bottom: 16px; text-align: left; }
+.fs-form-group label { display: block; font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.fs-input { width: 100%; padding: 10px 14px; border-radius: 9px; border: 1px solid var(--border); background: var(--cream2); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; outline: none; transition: all 0.15s; color: var(--charcoal); }
+.fs-input:focus { border-color: var(--gold); background: #fff; }
+.fs-modal-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-lg); padding: 30px; width: 100%; max-width: 450px; position: relative; animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.fs-modal-title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.4rem; margin-bottom: 20px; text-align: center; }
+.fs-modal-overlay { z-index: 1000; }

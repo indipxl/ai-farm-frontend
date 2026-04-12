@@ -43,6 +43,16 @@ export const useCrops = () => {
     fetchCrops();
   };
 
+  const updateCrop = async (id, crop) => {
+    const response = await fetch(`${API_BASE_URL}/api/crops/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(crop)
+    });
+    if (!response.ok) throw new Error('Update failed');
+    fetchCrops();
+  };
+
   const deleteCrop = async (id) => {
     const response = await fetch(`${API_BASE_URL}/api/crops/${id}`, {
       method: 'DELETE'
@@ -51,6 +61,6 @@ export const useCrops = () => {
     fetchCrops();
   };
 
-  return { crops, loading, error, refetch: fetchCrops, createCrop, deleteCrop };
+  return { crops, loading, error, refetch: fetchCrops, createCrop, updateCrop, deleteCrop };
 };
 

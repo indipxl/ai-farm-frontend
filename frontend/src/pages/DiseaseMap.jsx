@@ -1,15 +1,15 @@
 const MAP_BLOCKS = [
-  { id: "A1", label: "A1", crop: "🍅", status: "danger", name: "Tomatoes" }, { id: "A2", label: "A2", crop: "🍅", status: "danger", name: "Tomatoes" },
-  { id: "A3", label: "A3", crop: "🥬", status: "warning", name: "Lettuce" }, { id: "A4", label: "A4", crop: "🥬", status: "healthy", name: "Lettuce" },
+  { id: "A1", label: "A1", crop: "", status: "empty", name: "Chilli" }, { id: "A2", label: "A2", crop: "", status: "empty", name: "" },
+  { id: "A3", label: "A3", crop: "", status: "empty", name: "" }, { id: "A4", label: "A4", crop: "", status: "empty", name: "" },
   { id: "A5", label: "A5", crop: "", status: "empty", name: "" }, { id: "A6", label: "A6", crop: "", status: "empty", name: "" },
-  { id: "B1", label: "B1", crop: "🍅", status: "warning", name: "Tomatoes" }, { id: "B2", label: "B2", crop: "🫑", status: "healthy", name: "Peppers" },
-  { id: "B3", label: "B3", crop: "🫑", status: "healthy", name: "Peppers" }, { id: "B4", label: "B4", crop: "🥒", status: "healthy", name: "Cucumber" },
-  { id: "B5", label: "B5", crop: "🥒", status: "healthy", name: "Cucumber" }, { id: "B6", label: "B6", crop: "", status: "empty", name: "" },
-  { id: "C1", label: "C1", crop: "🫛", status: "healthy", name: "Long Beans" }, { id: "C2", label: "C2", crop: "🫛", status: "healthy", name: "Long Beans" },
-  { id: "C3", label: "C3", crop: "🍓", status: "healthy", name: "Strawberry" }, { id: "C4", label: "C4", crop: "🍓", status: "healthy", name: "Strawberry" },
-  { id: "C5", label: "C5", crop: "🥬", status: "warning", name: "Lettuce" }, { id: "C6", label: "C6", crop: "", status: "empty", name: "" },
-  { id: "D1", label: "D1", crop: "", status: "empty", name: "" }, { id: "D2", label: "D2", crop: "🫑", status: "healthy", name: "Peppers" },
-  { id: "D3", label: "D3", crop: "🫑", status: "healthy", name: "Peppers" }, { id: "D4", label: "D4", crop: "🥒", status: "healthy", name: "Cucumber" },
+  { id: "B1", label: "B1", crop: "", status: "empty", name: "" }, { id: "B2", label: "B2", crop: "", status: "empty", name: "" },
+  { id: "B3", label: "B3", crop: "", status: "empty", name: "" }, { id: "B4", label: "B4", crop: "", status: "empty", name: "" },
+  { id: "B5", label: "B5", crop: "", status: "empty", name: "" }, { id: "B6", label: "B6", crop: "", status: "empty", name: "" },
+  { id: "C1", label: "C1", crop: "", status: "empty", name: "" }, { id: "C2", label: "C2", crop: "", status: "empty", name: "" },
+  { id: "C3", label: "C3", crop: "", status: "empty", name: "" }, { id: "C4", label: "C4", crop: "", status: "empty", name: "" },
+  { id: "C5", label: "C5", crop: "", status: "empty", name: "" }, { id: "C6", label: "C6", crop: "", status: "empty", name: "" },
+  { id: "D1", label: "D1", crop: "🍅", status: "healthy", name: "" }, { id: "D2", label: "D2", crop: "", status: "empty", name: "" },
+  { id: "D3", label: "D3", crop: "", status: "empty", name: "" }, { id: "D4", label: "D4", crop: "", status: "empty", name: "" },
   { id: "D5", label: "D5", crop: "", status: "empty", name: "" }, { id: "D6", label: "D6", crop: "", status: "empty", name: "" },
 ];
 
@@ -51,7 +51,7 @@ export default function DiseaseMapPage() {
           <div className="fs-card" style={{ marginBottom: 18 }}>
             <div className="fs-card__header">
               <div>
-                <div className="fs-card__title">Farm Block Map</div>
+                <div className="fs-card__title">Farm Batch Map</div>
                 <div className="fs-card__sub">Hover blocks for detail · Pulsing = active threat</div>
               </div>
             </div>

@@ -46,6 +46,14 @@ async def create_crop(crop: CropCreate):
 @router.get("/", response_model=dict)
 async def get_crops():
     try:
+        # Fetch the single latest sensor data
+        latest_sensor_data = None
+        latest_sid = None
+        sensor_docs = db.collection('sensor_data').order_by('timestamp', direction=firestore.Query.DESCENDING).limit(1).stream()
+        for sdoc in sensor_docs:
+            latest_sensor_data = sdoc.to_dict()
+            latest_sid = sdoc.id
+
         docs = db.collection('crops').stream()
         crops = []
         for doc in docs:
@@ -61,11 +69,9 @@ async def get_crops():
                     data['batch'] = bdata
                     break
             
-            # Sensor data by sensor_data_id
-            if data.get('sensor_data_id'):
-                sensor_doc = db.collection('sensor_data').document(data.get('sensor_data_id')).get()
-                if sensor_doc.exists:
-                    data['sensor_data'] = sensor_doc.to_dict()
+            # Use latest sensor data
+            data['sensor_data_id'] = latest_sid
+            data['sensor_data'] = latest_sensor_data
                     
             crops.append(data)
         return {'crops': crops}

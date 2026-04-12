@@ -13,14 +13,14 @@ export default function BatchProfilesPage() {
     const [scanBatch, setScanBatch] = useState(null);
     const [qrBatch, setQrBatch] = useState(null);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
-    const [newBatchForm, setNewBatchForm] = useState({ crop: "", location: "", planted: "", notes: "" });
+    const [newBatchForm, setNewBatchForm] = useState({ crop: "", location: "", notes: "" });
     const [submitting, setSubmitting] = useState(false);
 
     const handleOpenModal = () => setShowRegisterModal(true);
 
     const handleCloseModal = () => {
         setShowRegisterModal(false);
-        setNewBatchForm({ crop: "", location: "", planted: "", notes: "" });
+        setNewBatchForm({ crop: "", location: "", notes: "" });
     };
 
     const handleFormChange = (e) => {
@@ -55,24 +55,29 @@ export default function BatchProfilesPage() {
         return true;
     });
 
-    const statusLabel = { healthy: "✓ Healthy", warning: "⚡ Warning", danger: "⚠ Critical" };
+    const statusLabel = { healthy: "Healthy", warning: "Warning", danger: "Critical" };
     const aiBoxCls = { healthy: "", warning: "fs-ai-box--warn", danger: "fs-ai-box--alert" };
     const cardCls = { healthy: "", warning: "fs-batch-card--warn", danger: "fs-batch-card--danger" };
     const barCls = { healthy: "fs-batch-card__bar--healthy", warning: "fs-batch-card__bar--warning", danger: "fs-batch-card__bar--danger" };
     const pillCls = { healthy: "fs-pill--healthy", warning: "fs-pill--warning", danger: "fs-pill--danger" };
 
-    const todayDate = new Date().toLocaleDateString("en-GB", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
+    const formatBatchDate = (dateString) => {
+        if (!dateString) return "N/A";
+
+        const date = new Date(dateString);
+
+        return new Intl.DateTimeFormat('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).format(date);
+    };
 
     return (
         <>
             <div className="fs-page-header">
                 <div>
-                    <div className="fs-page-eyebrow">Custom Batch Configurationu</div>
+                    <div className="fs-page-eyebrow">Custom Batch Configuration</div>
                     <h1 className="fs-page-title">Batch <em>Profiles</em></h1>
                     <p className="fs-page-sub">Monitoring {(batches || []).length} active batches</p>
                 </div>
@@ -131,7 +136,7 @@ export default function BatchProfilesPage() {
                             <div>
                                 <div className="fs-batch-card__crop">{b.crop}</div>
                                 <div className="fs-batch-card__loc">📍 {b.location}</div>
-                                <div className="fs-batch-card__id">{b.id} · Planted {b.planted}</div>
+                                <div className="fs-batch-card__id">{b.id} · Planted {formatBatchDate(b.created_at)}</div>
                             </div>
                             <span className={`fs-pill ${pillCls[b.status]}`}>{statusLabel[b.status]}</span>
                         </div>
@@ -140,27 +145,27 @@ export default function BatchProfilesPage() {
                                 <div className="fs-sensor-mini">
                                     <span className="fs-sensor-mini__icon">🌡️</span>
                                     <span className="fs-sensor-mini__name">Temp</span>
-                                    <span className={`fs-sensor-mini__val fs-sensor-mini__val--${b.status === 'danger' ? 'warn' : 'ok'}`}>
-                                        {b.status === 'danger' ? '34°C' : '28°C'}
+                                    <span className={`fs-sensor-mini__val`}>
+                                        {b.sensor_data?.air?.temp ?? '--'}°C
                                     </span>
                                 </div>
                                 <div className="fs-sensor-mini">
                                     <span className="fs-sensor-mini__icon">💧</span>
                                     <span className="fs-sensor-mini__name">Moisture</span>
-                                    <span className={`fs-sensor-mini__val fs-sensor-mini__val--${b.status === 'danger' ? 'bad' : 'ok'}`}>
-                                        {b.status === 'danger' ? '42%' : '70%'}
+                                    <span className={`fs-sensor-mini__val`}>
+                                        {b.sensor_data?.soil?.moisture ?? '--'}%
                                     </span>
                                 </div>
                                 <div className="fs-sensor-mini">
                                     <span className="fs-sensor-mini__icon">🌤️</span>
                                     <span className="fs-sensor-mini__name">Humidity</span>
-                                    <span className="fs-sensor-mini__val fs-sensor-mini__val--ok">68%</span>
+                                    <span className="fs-sensor-mini__val">{b.sensor_data?.air?.hum ?? '--'}%</span>
                                 </div>
                                 <div className="fs-sensor-mini">
                                     <span className="fs-sensor-mini__icon">⚗️</span>
                                     <span className="fs-sensor-mini__name">pH</span>
-                                    <span className={`fs-sensor-mini__val fs-sensor-mini__val--${b.status === 'danger' ? 'warn' : 'ok'}`}>
-                                        {b.status === 'danger' ? '5.8' : '6.8'}
+                                    <span className={`fs-sensor-mini__val`}>
+                                        {b.sensor_data?.soil?.ph ?? '--'}
                                     </span>
                                 </div>
                             </div>
@@ -178,9 +183,7 @@ export default function BatchProfilesPage() {
                             </div>
                             <div className="fs-suggestion">
                                 <div className="fs-suggestion__label">AI Recommendation</div>
-                                {b.status === 'danger' ? 'Apply copper fungicide within 24h. Remove affected leaves.' :
-                                    b.status === 'warning' ? 'Monitor aphids. Consider neem oil spray.' :
-                                        'Crop healthy. Maintain current irrigation schedule.'}
+                                {b.ai_report?.analysis ?? 'No analysis available.'}
                             </div>
                             <div className="fs-batch-actions">
                                 <button className="fs-btn-scan" onClick={() => setScanBatch(b)}>
@@ -188,28 +191,28 @@ export default function BatchProfilesPage() {
                                 </button>
                                 <div style={{ display: 'flex', gap: '6px' }}>
                                     {/* <button
-                    className="fs-btn fs-btn--ghost fs-btn--sm"
-                    onClick={() => {
-                      setEditBatch(b);
-                      setShowEditModal(true);
-                    }}
-                    title="Edit batch"
-                  >
-                    ✏️ Edit
-                  </button>
-                  <button
-                    className="fs-btn fs-btn--danger fs-btn--sm"
-                    onClick={() => {
-                      setDeleteBatchId(b.id);
-                      setShowDeleteModal(true);
-                    }}
-                    title="Delete batch"
-                  >
-                    🗑️ Delete
-                  </button> */}
-                                    <button className="fs-btn-qr" onClick={() => setQrBatch(b)} title="QR Code">
-                                        ▦
+                                        className="fs-btn fs-btn--ghost fs-btn--sm"
+                                        onClick={() => {
+                                            setEditBatch(b);
+                                            setShowEditModal(true);
+                                        }}
+                                        title="Edit batch"
+                                    >
+                                        ✏️ Edit
                                     </button>
+                                    <button
+                                        className="fs-btn fs-btn--danger fs-btn--sm"
+                                        onClick={() => {
+                                            setDeleteBatchId(b.id);
+                                            setShowDeleteModal(true);
+                                        }}
+                                        title="Delete batch"
+                                    >
+                                        🗑️ Delete
+                                    </button> */}
+                                    {/* <button className="fs-btn-qr" onClick={() => setQrBatch(b)} title="QR Code">
+                                        ▦
+                                    </button> */}
                                 </div>
                             </div>
                             <div className="fs-batch-card__last-scan">Last scan: Today 08:42 AM</div>

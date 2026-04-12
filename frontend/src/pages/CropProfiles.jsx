@@ -66,9 +66,9 @@ export default function CropProfilesPage() {
 
       <div className="fs-stat-strip">
         <div className="fs-stat-card fs-stat-card--gold"><div className="fs-stat-card__label">Active Profiles</div><div className="fs-stat-card__val">{CROP_PROFILES.length}</div><div className="fs-stat-card__meta">Custom Profile</div><span className="fs-stat-tag fs-stat-tag--good">All active</span></div>
-        <div className="fs-stat-card fs-stat-card--green"><div className="fs-stat-card__label">Batches Covered</div><div className="fs-stat-card__val">6</div><div className="fs-stat-card__meta">All batches assigned</div><span className="fs-stat-tag fs-stat-tag--good">Complete</span></div>
-        <div className="fs-stat-card fs-stat-card--amber"><div className="fs-stat-card__label">Custom Alerts</div><div className="fs-stat-card__val fs-stat-card__val--warn">4</div><div className="fs-stat-card__meta">Profile-based triggers</div><span className="fs-stat-tag fs-stat-tag--warn">Active</span></div>
-        <div className="fs-stat-card fs-stat-card--purple"><div className="fs-stat-card__label">AI Optimisations</div><div className="fs-stat-card__val">12</div><div className="fs-stat-card__meta">Suggested adjustments</div><span className="fs-stat-tag fs-stat-tag--good">Review</span></div>
+        <div className="fs-stat-card fs-stat-card--green"><div className="fs-stat-card__label">Batches Covered</div><div className="fs-stat-card__val">{(batches || []).length}</div><div className="fs-stat-card__meta">All batches assigned</div><span className="fs-stat-tag fs-stat-tag--good">Complete</span></div>
+        <div className="fs-stat-card fs-stat-card--amber"><div className="fs-stat-card__label">Custom Alerts</div><div className="fs-stat-card__val fs-stat-card__val--warn">0</div><div className="fs-stat-card__meta">Profile-based triggers</div><span className="fs-stat-tag fs-stat-tag--warn">Active</span></div>
+        <div className="fs-stat-card fs-stat-card--purple"><div className="fs-stat-card__label">AI Optimisations</div><div className="fs-stat-card__val">0</div><div className="fs-stat-card__meta">Suggested adjustments</div><span className="fs-stat-tag fs-stat-tag--good">Review</span></div>
       </div>
 
       <div className="fs-grid-2" style={{ alignItems: "start" }}>
@@ -125,7 +125,7 @@ export default function CropProfilesPage() {
                   </div>
                 </div>
                 <div className="fs-profile-card__footer">
-                  <div className="fs-profile-card__assigned">Assigned to <strong>{p.batch_id || 'Unassigned'}</strong></div>
+                  <div className="fs-profile-card__assigned">Assigned to <strong>{p.batch_id || 'Unassigned'}</strong> | Sensor ID: <strong>{p.sensor_data_id || ''}</strong></div>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button className="fs-btn fs-btn--ghost fs-btn--sm" onClick={e => { e.stopPropagation(); setEditingCrop(p); }}>Edit</button>
                     <button className="fs-btn fs-btn--ghost fs-btn--sm" style={{ color: "var(--red)" }} onClick={e => { e.stopPropagation(); setDeletingCrop(p); }}>Delete</button>
@@ -151,6 +151,77 @@ export default function CropProfilesPage() {
         </div>
 
         <div>
+          {profile ? (
+            <div className="fs-recipe-editor">
+              <div className="fs-recipe-editor__title">{profile.emoji} {profile.name}</div>
+              <div className="fs-recipe-editor__sub">Adjust target ranges — AI alerts trigger when readings fall outside these bounds</div>
+              <div className="fs-recipe-editor__grid">
+                <div className="fs-range-row">
+                  <label>Soil Moisture (%) <span>{profile.sensor_data?.soil?.moisture ?? 0}%</span></label>
+                  <input type="range" value={profile.sensor_data?.soil?.moisture ?? 0} />
+                </div>
+                <div className="fs-range-row">
+                  <label>Temperature (°C) <span>{profile.sensor_data?.air?.temp ?? 0}°C</span></label>
+                  <input type="range" value={profile.sensor_data?.air?.temp ?? 0} />
+                </div>
+                <div className="fs-range-row">
+                  <label>Humidity (%) <span>{profile.sensor_data?.air?.hum ?? 0}%</span></label>
+                  <input type="range" value={profile.sensor_data?.air?.hum ?? 0} />
+                </div>
+                <div className="fs-range-row">
+                  <label>Soil pH <span>{profile.sensor_data?.soil?.ph ?? 0}</span></label>
+                  <input type="range" value={profile.sensor_data?.soil?.ph ?? 0} />
+                </div>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.62rem", color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Alert Condition</div>
+                <div style={{ background: "var(--cream2)", borderRadius: 8, padding: "10px 12px", fontSize: "0.77rem", color: "var(--dark)", border: "1px solid var(--border)", textAlign: 'left' }}>{profile.alert}</div>
+
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.62rem", color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Farmer Notes / Custom Recipe</div>
+                <textarea className="fs-textarea" rows={3} defaultValue={profile.notes} />
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button className="fs-btn fs-btn--gold" style={{ flex: 1, justifyContent: "center" }}>Edit Profile</button>
+                <button className="fs-btn fs-btn--ghost" onClick={() => setSelected(null)}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div className="fs-card">
+              <div className="fs-card__body" style={{ textAlign: "center", padding: "48px 24px" }}>
+                <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🌱</div>
+                <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: "1.1rem", marginBottom: 6 }}>Select a profile to edit</div>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-dim)", lineHeight: 1.6 }}>Click any crop profile on the left to open the recipe editor and customise your target thresholds and alert conditions.</div>
+              </div>
+            </div>
+          )}
+
+          {profile && (
+            <div className="fs-card" style={{ marginTop: 18 }}>
+              <div className="fs-card__header">
+                <div>
+                  <div className="fs-card__title">AI Profile Suggestions</div>
+                  <div className="fs-card__sub">Based on your current readings &amp; crop type</div>
+                </div>
+              </div>
+              <div className="fs-card__body">
+                <div className="fs-suggestion" style={{ marginBottom: 10 }}>
+                  <div className="fs-suggestion__label">Optimisation</div>
+                  Your moisture threshold (current: {profile.sensor_data?.soil?.moisture ?? 0}%) is slightly high for {profile.name}. Research suggests {profile.params?.[0]?.min ?? 0}–{profile.params?.[0]?.max ?? 0}% reduces fungal risk without stress.
+                </div>
+                <div className="fs-suggestion">
+                  <div className="fs-suggestion__label">Seasonal Adjustment</div>
+                  March–April is peak humidity season in Kota Kinabalu. Consider lowering your humidity alert threshold to 70% to get earlier warnings before fungal conditions develop.
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+
+      {/* <div>
           <div className="fs-card">
             <div className="fs-card__body" style={{ textAlign: "center", padding: "48px 24px" }}>
               <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🌱</div>
@@ -158,8 +229,9 @@ export default function CropProfilesPage() {
               <div style={{ fontSize: "0.8rem", color: "var(--text-dim)", lineHeight: 1.6 }}>Quickly manage your crop profiles, sensor assignments, and alert thresholds from this dashboard.</div>
             </div>
           </div>
-        </div>
-      </div>
+        </div> */}
+
+
 
       {/* Modals */}
       {isCreating && (
