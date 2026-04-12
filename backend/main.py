@@ -42,6 +42,10 @@ app.include_router(crops_router, prefix="/api")
 from services.sensor_data import router as sensors_router
 app.include_router(sensors_router, prefix="/api")
 
+# image analysis
+from services.image_analysis import router as image_router
+app.include_router(image_router, prefix="/api")
+
 # if __name__ == "__main__":
 #     port = int(os.getenv('PORT', 8080))
 #     uvicorn.run(app, host="0.0.0.0", port=port)

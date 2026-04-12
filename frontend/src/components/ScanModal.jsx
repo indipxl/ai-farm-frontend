@@ -1,50 +1,35 @@
-import { useState, useRef, useEffect } from 'react';
-
-const PROC_STEPS = ['Extracting visual features...', 'Checking disease patterns...', 'Cross-referencing pest database...', 'Generating recommendations...', 'Finalising analysis...'];
-
-const AI_RESULTS = {
-    healthy: {
-        icon: '✅',
-        title: 'No Disease or Pest Detected',
-        conf: 'Confidence: 95%',
-        detail: 'No visible signs of disease or pest infestation.',
-        sugs: ['Maintain current schedule', 'Next scan in 48h']
-    },
-    aphid: {
-        icon: '🔎',
-        title: 'Aphid Infestation — Early Stage',
-        conf: 'Confidence: 82%',
-        detail: 'Small colonies on leaf undersides.',
-        sugs: ['Neem oil spray', 'Encourage predators']
-    },
-    blight: {
-        icon: '⚠️',
-        title: 'Early Blight Detected',
-        conf: 'Confidence: 91%',
-        detail: 'Lesions on lower leaves.',
-        sugs: ['Copper fungicide 24h', 'Remove leaves']
-    }
-};
+import { useState, useRef } from 'react';
+import { useImageAnalysis } from '../useImageAnalysis.js';
 
 export default function ScanModal({ batch, onClose }) {
     const [phase, setPhase] = useState('upload');
-    const [step, setStep] = useState(PROC_STEPS[0]);
-    const [result, setResult] = useState(null);
     const fileRef = useRef();
 
-    const startProcessing = () => {
-        setPhase('processing');
-        let i = 0;
-        const iv = setInterval(() => {
-            if (i < PROC_STEPS.length) {
-                setStep(PROC_STEPS[i++]);
-            } else {
-                clearInterval(iv);
-                const keys = Object.keys(AI_RESULTS);
-                setResult(AI_RESULTS[keys[Math.floor(Math.random() * keys.length)]]);
-                setPhase('result');
+    const {
+        uploadAnalyzeImage,
+        createImageAnalysis,
+        isAnalyzing,
+        analysisResult: result,
+        rawAnalysis,
+        currentStep: step,
+        isSaving: saving
+    } = useImageAnalysis(batch?.id);
+
+    const startProcessing = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setPhase('processing');
+            uploadAnalyzeImage(file);
+        }
+    };
+
+    const handleSave = async () => {
+        if (rawAnalysis) {
+            const success = await createImageAnalysis(rawAnalysis);
+            if (success) {
+                onClose();
             }
-        }, 850);
+        }
     };
 
     if (!batch) return null;
@@ -79,13 +64,13 @@ export default function ScanModal({ batch, onClose }) {
                                 style={{ display: 'none' }}
                                 onChange={startProcessing}
                             />
-                            <button className="fs-btn-upload" onClick={() => fileRef.current?.click()}>
-                                📸 Take/Upload Photo
-                            </button>
+                            {/* <button className="fs-btn-upload" onClick={() => fileRef.current?.click()}>
+                                📸 Upload Photo
+                            </button> */}
                             <button className="fs-btn-cancel" onClick={onClose}>Cancel</button>
                         </>
                     )}
-                    {phase === 'processing' && (
+                    {isAnalyzing && (
                         <div style={{ textAlign: 'center', padding: '20px 0' }}>
                             <div className="fs-spinner" />
                             <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '5px' }}>
@@ -94,9 +79,9 @@ export default function ScanModal({ batch, onClose }) {
                             <div className="fs-proc-step">{step}</div>
                         </div>
                     )}
-                    {phase === 'result' && result && (
+                    {result && (
                         <>
-                            <div style={{ display: 'flex', gap: '11px', alignItems: 'center', marginBottom: '14px' }}>
+                            <div style={{ display: 'flex', gap: '11px', justifyContent: 'center', marginBottom: '14px' }}>
                                 <span style={{ fontSize: '1.9rem' }}>{result.icon}</span>
                                 <div>
                                     <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>{result.title}</div>
@@ -112,9 +97,10 @@ export default function ScanModal({ batch, onClose }) {
                             {result.sugs.map((s, i) => (
                                 <div key={i} className="fs-result-sug">{s}</div>
                             ))}
-                            <button className="fs-btn-upload" style={{ marginTop: '10px' }} onClick={onClose}>
-                                ✓ Save Record
+                            <button className="fs-btn-upload" style={{ marginTop: '10px' }} onClick={handleSave} disabled={saving}>
+                                Save Image
                             </button>
+                            <button className="fs-btn-cancel" onClick={onClose}>Cancel</button>
                         </>
                     )}
                 </div>
