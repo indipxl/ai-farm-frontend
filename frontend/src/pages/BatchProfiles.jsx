@@ -68,7 +68,6 @@ export default function BatchProfilesPage() {
     const handleDeleteSubmission = async (docId) => {
         try {
             await deleteBatch(docId);
-            toast.success("Batch deleted permanently.");
             setShowDeleteModal(false);
             setDeleteBatchId(null);
         } catch {
@@ -257,7 +256,7 @@ export default function BatchProfilesPage() {
                                         </button>
                                         <button
                                             className="fs-dropdown-item fs-dropdown-item--danger"
-                                            onClick={() => { setDeleteBatchId(b.id); setShowDeleteModal(true); }}
+                                            onClick={() => { setDeleteBatchId(b.doc_id); setShowDeleteModal(true); }}
                                         >
                                             🗑️ Delete Batch
                                         </button>
@@ -300,7 +299,7 @@ export default function BatchProfilesPage() {
                 <DeleteBatchModal
                     batchId={deleteBatchId}
                     onClose={() => { setShowDeleteModal(false); setDeleteBatchId(null); }}
-                    onConfirm={() => handleDeleteSubmission(deleteBatchId)}
+                    onDelete={() => handleDeleteSubmission(deleteBatchId)}
                 />
             )}
             {selectedAnalysis && (
