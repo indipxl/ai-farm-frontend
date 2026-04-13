@@ -114,6 +114,14 @@ async def get_batches():
                 else:
                     mapped_status = 'healthy'
 
+            # Fetch latest image analysis by batch_id
+            image_analysis = None
+            cam_docs = db.collection('image_analysis').where('batch_id', '==', batch_id).order_by('timestamp', direction=firestore.Query.DESCENDING).limit(1).stream()
+            for cam_doc in cam_docs:
+                image_analysis = cam_doc.to_dict()
+                if image_analysis.get('timestamp'):
+                    image_analysis['timestamp'] = image_analysis['timestamp'].isoformat()
+
             batches.append({
                 'id': batch_id,
                 'doc_id': doc.id,
@@ -125,6 +133,7 @@ async def get_batches():
                 'sensor_data_id': latest_sid,
                 'sensor_data': latest_sensor_data,
                 'ai_report': {'analysis': latest_ai_report} if latest_ai_report else None,
+                'image_analysis': image_analysis,
                 'created_at': data.get('created_at', '').isoformat() if data.get('created_at') else ''
             })
         return {'batches': batches}
