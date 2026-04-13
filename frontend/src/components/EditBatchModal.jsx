@@ -18,11 +18,15 @@ export default function EditBatchModal({ batch, onClose, onSubmit }) {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await onSubmit(batch.id, formData);
+            await onSubmit(batch.doc_id, formData);
             toast.success('Batch updated!');
             onClose();
-        } catch {
-            toast.error('Update failed.');
+        } catch (err) {
+            if (err.message && err.message.includes('occupied')) {
+                toast.error("That location is already occupied!");
+            } else {
+                toast.error('Update failed.');
+            }
         } finally {
             setSubmitting(false);
         }

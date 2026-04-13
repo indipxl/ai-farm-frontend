@@ -3,13 +3,15 @@ import { useBatches } from "../useBatches.js";
 import ScanModal from "../components/ScanModal";
 import QRModal from "../components/QRModal";
 import RegisterBatchModal from "../components/RegisterBatchModal";
+import EditBatchModal from "../components/EditBatchModal";
+import DeleteBatchModal from "../components/DeleteBatchModal";
 import ImageDetailsModal from "../components/ImageDetailsModal";
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import "../farmsense.css";
 
 export default function BatchProfilesPage() {
-    const { batches, addBatch, refetch } = useBatches();
+    const { batches, addBatch, updateBatch, deleteBatch, refetch } = useBatches();
     const [filter, setFilter] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [scanBatch, setScanBatch] = useState(null);
@@ -18,6 +20,12 @@ export default function BatchProfilesPage() {
     const [newBatchForm, setNewBatchForm] = useState({ crop: "", location: "", notes: "" });
     const [submitting, setSubmitting] = useState(false);
     const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+
+    // Edit and Delete states
+    const [editBatch, setEditBatch] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [deleteBatchId, setDeleteBatchId] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleOpenModal = () => setShowRegisterModal(true);
 
@@ -36,10 +44,35 @@ export default function BatchProfilesPage() {
             await addBatch(formData);
             toast.success(`Registered ${formData.crop}!`);
             handleCloseModal();
-        } catch {
-            toast.error("Failed to register batch.");
+        } catch (err) {
+            if (err.message && err.message.includes('occupied')) {
+                toast.error("That location is already occupied!");
+            } else {
+                toast.error("Failed to register batch.");
+            }
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleEditSubmission = async (docId, formData) => {
+        try {
+            await updateBatch(docId, formData);
+            setShowEditModal(false);
+            setEditBatch(null);
+        } catch {
+            throw new Error("Update failed");
+        }
+    };
+
+    const handleDeleteSubmission = async (docId) => {
+        try {
+            await deleteBatch(docId);
+            toast.success("Batch deleted permanently.");
+            setShowDeleteModal(false);
+            setDeleteBatchId(null);
+        } catch {
+            throw new Error("Failed to delete batch");
         }
     };
 
@@ -206,7 +239,7 @@ export default function BatchProfilesPage() {
                                     <span className="fs-btn-scan__dot">◉</span>Scan with Camera
                                 </button>
                                 <div style={{ display: 'flex', gap: '6px' }}>
-                                    {/* <button
+                                    <button
                                         className="fs-btn fs-btn--ghost fs-btn--sm"
                                         onClick={() => {
                                             setEditBatch(b);
@@ -219,16 +252,16 @@ export default function BatchProfilesPage() {
                                     <button
                                         className="fs-btn fs-btn--danger fs-btn--sm"
                                         onClick={() => {
-                                            setDeleteBatchId(b.id);
+                                            setDeleteBatchId(b.doc_id);
                                             setShowDeleteModal(true);
                                         }}
                                         title="Delete batch"
                                     >
                                         🗑️ Delete
-                                    </button> */}
-                                    {/* <button className="fs-btn-qr" onClick={() => setQrBatch(b)} title="QR Code">
+                                    </button>
+                                    <button className="fs-btn-qr" onClick={() => setQrBatch(b)} title="QR Code">
                                         ▦
-                                    </button> */}
+                                    </button>
                                 </div>
                             </div>
                             <div className="fs-batch-card__last-scan">Last scan: {b.image_analysis?.timestamp

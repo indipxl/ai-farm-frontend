@@ -3,6 +3,7 @@ import { useBatches } from "../useBatches.js";
 import ScanModal from "../components/ScanModal";
 import QRModal from "../components/QRModal";
 import RegisterBatchModal from "../components/RegisterBatchModal";
+import FieldMap from "../components/FieldMap";
 import toast from 'react-hot-toast';
 import "../farmsense.css";
 
@@ -93,92 +94,8 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="fs-batch-grid">
-                {filtered.map((b, i) => (
-                    <div key={b.id} className={`fs-batch-card ${cardCls[b.status]}`} style={{ animationDelay: `${0.05 + i * 0.05}s` }}>
-                        <div className={`fs-batch-card__bar ${barCls[b.status]}`} />
-                        <div className="fs-batch-card__header">
-                            <div>
-                                <div className="fs-batch-card__crop">{b.crop}</div>
-                                <div className="fs-batch-card__loc">📍 {b.location}</div>
-                                <div className="fs-batch-card__id">{b.id} · Planted {b.created_at}</div>
-                            </div>
-                            <span className={`fs-pill ${pillCls[b.status]}`}>{statusLabel[b.status]}</span>
-                        </div>
-                        <div className="fs-batch-card__body">
-                            <div className="fs-sensor-row">
-                                <div className="fs-sensor-mini">
-                                    <span className="fs-sensor-mini__icon">🌡️</span>
-                                    <span className="fs-sensor-mini__name">Temp</span>
-                                    <span className={`fs-sensor-mini__val fs-sensor-mini__val--${b.status === 'danger' ? 'warn' : 'ok'}`}>
-                                        {b.status === 'danger' ? '34°C' : '28°C'}
-                                    </span>
-                                </div>
-                                <div className="fs-sensor-mini">
-                                    <span className="fs-sensor-mini__icon">💧</span>
-                                    <span className="fs-sensor-mini__name">Moisture</span>
-                                    <span className={`fs-sensor-mini__val fs-sensor-mini__val--${b.status === 'danger' ? 'bad' : 'ok'}`}>
-                                        {b.status === 'danger' ? '42%' : '70%'}
-                                    </span>
-                                </div>
-                                <div className="fs-sensor-mini">
-                                    <span className="fs-sensor-mini__icon">🌤️</span>
-                                    <span className="fs-sensor-mini__name">Humidity</span>
-                                    <span className="fs-sensor-mini__val fs-sensor-mini__val--ok">68%</span>
-                                </div>
-                                <div className="fs-sensor-mini">
-                                    <span className="fs-sensor-mini__icon">⚗️</span>
-                                    <span className="fs-sensor-mini__name">pH</span>
-                                    <span className={`fs-sensor-mini__val fs-sensor-mini__val--${b.status === 'danger' ? 'warn' : 'ok'}`}>
-                                        {b.status === 'danger' ? '5.8' : '6.8'}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className={`fs-ai-box ${aiBoxCls[b.status]} fs-ai-cam`}>
-                                <div>
-                                    <div className="fs-ai-box__tag">
-                                        <span className="fs-ai-box__emoji">🔍</span> AI Camera Vision
-                                    </div>
-                                    <div className="fs-ai-box__result">
-                                        {b.status === 'danger' ? 'Early Blight Detected' :
-                                            b.status === 'warning' ? 'Aphid Presence' : 'No Disease Detected'}
-                                    </div>
-                                    <div className="fs-ai-box__conf">Confidence: 92% · 2h ago</div>
-                                </div>
-                            </div>
-                            <div className="fs-suggestion">
-                                <div className="fs-suggestion__label">AI Recommendation</div>
-                                {b.status === 'danger' ? 'Apply copper fungicide within 24h. Remove affected leaves.' :
-                                    b.status === 'warning' ? 'Monitor aphids. Consider neem oil spray.' :
-                                        'Crop healthy. Maintain current irrigation schedule.'}
-                            </div>
-                            <div className="fs-batch-actions">
-                                <button className="fs-btn-scan" onClick={() => setScanBatch(b)}>
-                                    <span className="fs-btn-scan__dot">◉</span>Image
-                                </button>
-                                <div style={{ display: 'flex', gap: '6px' }}>
-                                    <button className="fs-btn-qr" onClick={() => setQrBatch(b)} title="QR Code">
-                                        ▦
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="fs-batch-card__last-scan">Last scan: Today 08:42 AM</div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {scanBatch && <ScanModal batch={scanBatch} onClose={() => setScanBatch(null)} />}
-            {qrBatch && <QRModal batch={qrBatch} onClose={() => setQrBatch(null)} />}
-            {showRegisterModal && (
-                <RegisterBatchModal
-                    onClose={handleCloseModal}
-                    onSubmit={handleSubmitBatch}
-                    formData={newBatchForm}
-                    setFormData={setNewBatchForm}
-                    submitting={submitting}
-                />
-            )}
+            {/* Field Map Section */}
+            <FieldMap batches={batches} />
         </>
     );
 }

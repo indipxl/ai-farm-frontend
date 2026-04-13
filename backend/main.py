@@ -6,8 +6,14 @@ from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore
 import uvicorn
+import asyncio
 
 app = FastAPI(title="Ai Farm API", version="1.0.0")
+
+@app.on_event("startup")
+async def startup_event():
+    from services.scheduler import automated_ai_loop
+    asyncio.create_task(automated_ai_loop())
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,7 +25,7 @@ app.add_middleware(
 
 load_dotenv()
 project_id = os.getenv("FIREBASE_PROJECT_ID")
-service_account_path = "gaia-sabah-c3-group2-aifarm-02d42c9eeb6a.json"
+service_account_path = "gaia-sabah-c3-group2-aifarm-firebase-adminsdk-fbsvc-8548a13e75.json"
 
 if os.path.exists(service_account_path):
     # runs on your local/cloud shell
@@ -41,6 +47,10 @@ app.include_router(crops_router, prefix="/api")
 # sensors
 from services.sensor_data import router as sensors_router
 app.include_router(sensors_router, prefix="/api")
+
+# sensor analysis
+from services.analysis_sensor_data import router as sensor_analysis_router
+app.include_router(sensor_analysis_router, prefix="/api")
 
 # image analysis
 from services.image_analysis import router as image_router
