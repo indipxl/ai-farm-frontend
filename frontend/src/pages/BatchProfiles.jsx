@@ -5,11 +5,13 @@ import QRModal from "../components/QRModal";
 import RegisterBatchModal from "../components/RegisterBatchModal";
 import EditBatchModal from "../components/EditBatchModal";
 import DeleteBatchModal from "../components/DeleteBatchModal";
+import ImageDetailsModal from "../components/ImageDetailsModal";
 import toast from 'react-hot-toast';
+import { format } from 'date-fns';
 import "../farmsense.css";
 
 export default function BatchProfilesPage() {
-    const { batches, addBatch, updateBatch, deleteBatch } = useBatches();
+    const { batches, addBatch, updateBatch, deleteBatch, refetch } = useBatches();
     const [filter, setFilter] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [scanBatch, setScanBatch] = useState(null);
@@ -17,6 +19,7 @@ export default function BatchProfilesPage() {
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [newBatchForm, setNewBatchForm] = useState({ crop: "", location: "", notes: "" });
     const [submitting, setSubmitting] = useState(false);
+    const [selectedAnalysis, setSelectedAnalysis] = useState(null);
 
     // Edit and Delete states
     const [editBatch, setEditBatch] = useState(null);
@@ -203,15 +206,28 @@ export default function BatchProfilesPage() {
                                 </div>
                             </div>
                             <div className={`fs-ai-box ${aiBoxCls[b.status]} fs-ai-cam`}>
-                                <div>
-                                    <div className="fs-ai-box__tag">
-                                        <span className="fs-ai-box__emoji">🔍</span> AI Camera Vision
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div
+                                        style={{
+                                            flex: 1,
+                                            cursor: b.image_analysis ? 'pointer' : 'default',
+                                            opacity: b.image_analysis ? 1 : 0.6
+                                        }}
+                                        onClick={b.image_analysis ? () => setSelectedAnalysis(b.image_analysis) : undefined}
+                                        title={b.image_analysis ? "View details" : undefined}
+                                    >
+                                        <div className="fs-ai-box__tag">
+                                            <span className="fs-ai-box__emoji">🔍</span> AI Camera Vision
+                                        </div>
+                                        <div className="fs-ai-box__result">
+                                            {b.image_analysis?.detection ?? 'No Scan Data'}
+                                        </div>
+                                        <div className="fs-ai-box__conf">
+                                            {b.image_analysis
+                                                ? `Confidence: ${b.image_analysis.confidence}%`
+                                                : '--'}
+                                        </div>
                                     </div>
-                                    <div className="fs-ai-box__result">
-                                        {b.status === 'danger' ? 'Early Blight Detected' :
-                                            b.status === 'warning' ? 'Aphid Presence' : 'No Disease Detected'}
-                                    </div>
-                                    <div className="fs-ai-box__conf">Confidence: 92% · 2h ago</div>
                                 </div>
                             </div>
                             <div className="fs-suggestion">
@@ -248,13 +264,21 @@ export default function BatchProfilesPage() {
                                     </button>
                                 </div>
                             </div>
-                            <div className="fs-batch-card__last-scan">Last scan: Today 08:42 AM</div>
+                            <div className="fs-batch-card__last-scan">Last scan: {b.image_analysis?.timestamp
+                                ? format(new Date(b.image_analysis.timestamp), "d MMMM yyyy hh:mm:ss a")
+                                : 'No scans yet'}</div>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {scanBatch && <ScanModal batch={scanBatch} onClose={() => setScanBatch(null)} />}
+            {scanBatch && (
+                <ScanModal
+                    batch={scanBatch}
+                    onClose={() => setScanBatch(null)}
+                    onSaveSuccess={refetch}
+                />
+            )}
             {qrBatch && <QRModal batch={qrBatch} onClose={() => setQrBatch(null)} />}
             {showRegisterModal && (
                 <RegisterBatchModal
@@ -265,24 +289,10 @@ export default function BatchProfilesPage() {
                     submitting={submitting}
                 />
             )}
-            {showEditModal && editBatch && (
-                <EditBatchModal
-                    batch={editBatch}
-                    onClose={() => {
-                        setShowEditModal(false);
-                        setEditBatch(null);
-                    }}
-                    onSubmit={handleEditSubmission}
-                />
-            )}
-            {showDeleteModal && deleteBatchId && (
-                <DeleteBatchModal
-                    batchId={deleteBatchId}
-                    onClose={() => {
-                        setShowDeleteModal(false);
-                        setDeleteBatchId(null);
-                    }}
-                    onDelete={handleDeleteSubmission}
+            {selectedAnalysis && (
+                <ImageDetailsModal
+                    analysis={selectedAnalysis}
+                    onClose={() => setSelectedAnalysis(null)}
                 />
             )}
         </>

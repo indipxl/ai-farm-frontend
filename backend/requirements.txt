@@ -5,3 +5,6 @@ python-multipart
 python-dateutil
 firebase-admin
 python-dotenv
+langchain-google-genai
+langchain-core
+Pillow
