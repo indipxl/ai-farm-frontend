@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 
 const PROC_STEPS = ['Extracting visual features...', 'Checking disease patterns...', 'Cross-referencing pest database...', 'Generating recommendations...', 'Finalising analysis...'];
@@ -14,6 +14,7 @@ export function useImageAnalysis(batchId) {
     const [saveError, setSaveError] = useState(null);
     const [currentStep, setCurrentStep] = useState(PROC_STEPS[0]);
     const [imageBase64, setImageBase64] = useState(null);
+    const imageBase64Ref = useRef(null);
 
     const uploadAnalyzeImage = useCallback(async (file) => {
         if (!file) return;
@@ -29,10 +30,18 @@ export function useImageAnalysis(batchId) {
             }
         }, 1000);
 
-        // Convert to base64 for history storage
-        const reader = new FileReader();
-        reader.onloadend = () => setImageBase64(reader.result);
-        reader.readAsDataURL(file);
+        // Convert to base64 for history storage (Awaited to ensure it's ready)
+        const convertToBase64 = (f) => new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const result = reader.result;
+                setImageBase64(result);
+                imageBase64Ref.current = result;
+                resolve(result);
+            };
+            reader.readAsDataURL(f);
+        });
+        await convertToBase64(file);
 
         try {
             const formData = new FormData();
@@ -92,7 +101,7 @@ export function useImageAnalysis(batchId) {
                     status: analysisData.status,
                     detail: analysisData.detail,
                     suggestions: analysisData.suggestions,
-                    image_base64: imageBase64
+                    image_base64: imageBase64Ref.current
                 })
             });
 
@@ -108,7 +117,7 @@ export function useImageAnalysis(batchId) {
         } finally {
             setIsSaving(false);
         }
-    }, [batchId]);
+    }, [batchId, imageBase64]);
 
     return {
         uploadAnalyzeImage,

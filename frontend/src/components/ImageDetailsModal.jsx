@@ -30,14 +30,18 @@ export default function ImageDetailsModal({ analysis, onClose }) {
         <div className="fs-modal-overlay" onClick={onClose}>
             <div className="fs-modal" onClick={e => e.stopPropagation()}>
                 <div className="fs-camera-view">
-                    {analysis.image_base64 ? (
-                        <img src={analysis.image_base64} alt="Scan result" style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '10px' }} />
-                    ) : (
-                        <>
-                            <span className="fs-camera-view__bg">📷</span>
-                            <div className="fs-scan-frame-wrap"></div>
-                        </>
-                    )}
+                    <div className="fs-scan-frame-wrap">
+                        <div className="fs-scan-frame">
+                            {analysis.image_base64 ? (
+                                <img src={analysis.image_base64} alt="Scan result" style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '10px' }} />
+                            ) : (
+                                <>
+                                    <span className="fs-camera-view__bg">📷</span>
+                                    <div className="fs-scan-frame-wrap"></div>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
                 <div className="fs-modal__header">
                     <div className="fs-modal__eyebrow">AI Analysis Report</div>

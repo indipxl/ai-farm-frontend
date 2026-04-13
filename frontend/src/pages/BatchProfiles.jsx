@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import "../farmsense.css";
 
 export default function BatchProfilesPage() {
-    const { batches, addBatch } = useBatches();
+    const { batches, addBatch, refetch } = useBatches();
     const [filter, setFilter] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [scanBatch, setScanBatch] = useState(null);
@@ -239,7 +239,13 @@ export default function BatchProfilesPage() {
                 ))}
             </div>
 
-            {scanBatch && <ScanModal batch={scanBatch} onClose={() => setScanBatch(null)} />}
+            {scanBatch && (
+                <ScanModal
+                    batch={scanBatch}
+                    onClose={() => setScanBatch(null)}
+                    onSaveSuccess={refetch}
+                />
+            )}
             {qrBatch && <QRModal batch={qrBatch} onClose={() => setQrBatch(null)} />}
             {showRegisterModal && (
                 <RegisterBatchModal

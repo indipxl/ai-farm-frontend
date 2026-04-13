@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useImageAnalysis } from '../useImageAnalysis.js';
 
-export default function ScanModal({ batch, onClose }) {
+export default function ScanModal({ batch, onClose, onSaveSuccess }) {
     const [phase, setPhase] = useState('upload');
     const [uploadedImage, setUploadedImage] = useState(null);
     const fileRef = useRef();
@@ -30,6 +30,7 @@ export default function ScanModal({ batch, onClose }) {
         if (rawAnalysis) {
             const success = await createImageAnalysis(rawAnalysis);
             if (success) {
+                if (onSaveSuccess) onSaveSuccess();
                 onClose();
             }
         }
