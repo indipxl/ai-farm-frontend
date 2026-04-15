@@ -68,7 +68,6 @@ export default function BatchProfilesPage() {
     const handleDeleteSubmission = async (docId) => {
         try {
             await deleteBatch(docId);
-            toast.success("Batch deleted permanently.");
             setShowDeleteModal(false);
             setDeleteBatchId(null);
         } catch {
@@ -91,7 +90,7 @@ export default function BatchProfilesPage() {
         return true;
     });
 
-    const statusLabel = { healthy: "Healthy", warning: "Warning", danger: "Critical" };
+    const statusLabel = { healthy: "Healthy", warning: "Warning", danger: "Danger" };
     const aiBoxCls = { healthy: "", warning: "fs-ai-box--warn", danger: "fs-ai-box--alert" };
     const cardCls = { healthy: "", warning: "fs-batch-card--warn", danger: "fs-batch-card--danger" };
     const barCls = { healthy: "fs-batch-card__bar--healthy", warning: "fs-batch-card__bar--warning", danger: "fs-batch-card__bar--danger" };
@@ -169,12 +168,16 @@ export default function BatchProfilesPage() {
                     <div key={b.id} className={`fs-batch-card ${cardCls[b.status]}`} style={{ animationDelay: `${0.05 + i * 0.05}s` }}>
                         <div className={`fs-batch-card__bar ${barCls[b.status]}`} />
                         <div className="fs-batch-card__header">
-                            <div>
+                            <div style={{ flex: 1 }}>
                                 <div className="fs-batch-card__crop">{b.crop}</div>
                                 <div className="fs-batch-card__loc">📍 {b.location}</div>
-                                <div className="fs-batch-card__id">{b.id} · Planted {formatBatchDate(b.created_at)}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                    <div className="fs-batch-card__id">{b.id} · Planted on {formatBatchDate(b.created_at)}</div>
+                                </div>
                             </div>
-                            <span className={`fs-pill ${pillCls[b.status]}`}>{statusLabel[b.status]}</span>
+                            <span className={`fs-pill ${pillCls[b.status]}`} style={{ fontSize: '0.65rem', padding: '1px 8px' }}>
+                                {statusLabel[b.status]}
+                            </span>
                         </div>
                         <div className="fs-batch-card__body">
                             <div className="fs-sensor-row">
@@ -205,12 +208,13 @@ export default function BatchProfilesPage() {
                                     </span>
                                 </div>
                             </div>
-                            <div className={`fs-ai-box ${aiBoxCls[b.status]} fs-ai-cam`}>
+                            <div
+                                className={`fs-ai-box ${aiBoxCls[b.status]} fs-ai-cam ${b.image_analysis ? 'is-clickable' : ''}`}
+                            >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div
                                         style={{
                                             flex: 1,
-                                            cursor: b.image_analysis ? 'pointer' : 'default',
                                             opacity: b.image_analysis ? 1 : 0.6
                                         }}
                                         onClick={b.image_analysis ? () => setSelectedAnalysis(b.image_analysis) : undefined}
@@ -235,33 +239,28 @@ export default function BatchProfilesPage() {
                                 {b.ai_report?.analysis ?? 'No analysis available.'}
                             </div>
                             <div className="fs-batch-actions">
-                                <button className="fs-btn-scan" onClick={() => setScanBatch(b)}>
+                                <button className="fs-btn-scan" onClick={() => setScanBatch(b)} style={{ width: '100%' }}>
                                     <span className="fs-btn-scan__dot">◉</span>Scan with Camera
                                 </button>
-                                <div style={{ display: 'flex', gap: '6px' }}>
-                                    <button
-                                        className="fs-btn fs-btn--ghost fs-btn--sm"
-                                        onClick={() => {
-                                            setEditBatch(b);
-                                            setShowEditModal(true);
-                                        }}
-                                        title="Edit batch"
-                                    >
-                                        ✏️ Edit
-                                    </button>
-                                    <button
-                                        className="fs-btn fs-btn--danger fs-btn--sm"
-                                        onClick={() => {
-                                            setDeleteBatchId(b.doc_id);
-                                            setShowDeleteModal(true);
-                                        }}
-                                        title="Delete batch"
-                                    >
-                                        🗑️ Delete
-                                    </button>
-                                    <button className="fs-btn-qr" onClick={() => setQrBatch(b)} title="QR Code">
-                                        ▦
-                                    </button>
+                                <button className="fs-btn-qr" onClick={() => setQrBatch(b)} title="QR Code">
+                                    ▦
+                                </button>
+                                <div className="fs-card-dropdown">
+                                    <button className="fs-icon-btn">⋮</button>
+                                    <div className="fs-dropdown-menu">
+                                        <button
+                                            className="fs-dropdown-item"
+                                            onClick={() => { setEditBatch(b); setShowEditModal(true); }}
+                                        >
+                                            ✏️ Edit Batch
+                                        </button>
+                                        <button
+                                            className="fs-dropdown-item fs-dropdown-item--danger"
+                                            onClick={() => { setDeleteBatchId(b.doc_id); setShowDeleteModal(true); }}
+                                        >
+                                            🗑️ Delete Batch
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div className="fs-batch-card__last-scan">Last scan: {b.image_analysis?.timestamp
@@ -287,6 +286,20 @@ export default function BatchProfilesPage() {
                     formData={newBatchForm}
                     setFormData={setNewBatchForm}
                     submitting={submitting}
+                />
+            )}
+            {showEditModal && editBatch && (
+                <EditBatchModal
+                    batch={editBatch}
+                    onClose={() => { setShowEditModal(false); setEditBatch(null); }}
+                    onSubmit={handleEditSubmission}
+                />
+            )}
+            {showDeleteModal && deleteBatchId && (
+                <DeleteBatchModal
+                    batchId={deleteBatchId}
+                    onClose={() => { setShowDeleteModal(false); setDeleteBatchId(null); }}
+                    onDelete={() => handleDeleteSubmission(deleteBatchId)}
                 />
             )}
             {selectedAnalysis && (

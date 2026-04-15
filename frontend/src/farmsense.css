@@ -130,7 +130,7 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--charco
 .fs-filter-pill{padding:5px 13px;border-radius:20px;font-size:0.7rem;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
 .fs-filter-pill:hover,.fs-filter-pill--active{background:var(--charcoal);color:#fff;border-color:var(--charcoal);}
 .fs-suggestion{background:linear-gradient(135deg,#fffbe8,#fff6cc);border:1px solid var(--border-gold);border-radius:10px;padding:11px 13px;font-size:0.78rem;color:var(--dark);line-height:1.55;text-align:justify;}
-.fs-suggestion__label{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--gold-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.fs-suggestion__label{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--gold-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;text-align: center;}
 .fs-progress-bar-wrap{margin-top:6px;}
 .fs-progress-label{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:0.59rem;color:var(--text-dim);margin-bottom:4px;}
 .fs-progress-bar{height:6px;background:var(--cream3);border-radius:3px;overflow:hidden;}
@@ -144,7 +144,7 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--charco
   gap: 18px;
   margin-bottom: 28px;
 }
-.fs-batch-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);transition:transform 0.2s,box-shadow 0.2s;animation:fadeUp 0.4s ease both;}
+.fs-batch-card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);transition:transform 0.2s,box-shadow 0.2s;animation:fadeUp 0.4s ease both;}
 .fs-batch-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
 .fs-batch-card--danger{border-color:rgba(192,57,43,0.28);}
 .fs-batch-card--warn{border-color:rgba(212,133,26,0.28);}
@@ -167,6 +167,8 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--charco
 .fs-sensor-mini__val--warn{color:var(--amber);}
 .fs-sensor-mini__val--bad{color:var(--red);}
 .fs-ai-box{border-radius:9px;padding:9px 11px;margin-bottom:9px;display:flex;gap:8px;align-items:flex-start;background:var(--cream2);border:1px solid var(--border);}
+.fs-ai-box.is-clickable {transition: transform 0.2s ease, box-shadow 0.2s ease;cursor: pointer;}
+.fs-ai-box.is-clickable:hover {transform: scale(1.04);z-index: 2;box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);}
 .fs-ai-box--alert{background:rgba(192,57,43,0.06);border-color:rgba(192,57,43,0.22);}
 .fs-ai-box--warn{background:rgba(212,133,26,0.06);border-color:rgba(212,133,26,0.22);}
 .fs-ai-box__emoji{font-size:0.8rem;flex-shrink:0;}
@@ -333,3 +335,13 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--charco
 .fs-modal-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-lg); padding: 30px; width: 100%; max-width: 450px; position: relative; animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .fs-modal-title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.4rem; margin-bottom: 20px; text-align: center; }
 .fs-modal-overlay { z-index: 1000; }
+
+.fs-card-actions {display: flex;gap: 3px;}
+.fs-icon-btn {background: var(--cream2);border: 1px solid var(--border);border-radius: 8px;display: flex;align-items: center;justify-content: center;cursor: pointer;transition: all 0.2s;}
+.fs-icon-btn:hover {background: var(--cream3);transform: translateY(-1px);}
+.fs-card-dropdown {position: relative;display: inline-block;}
+.fs-dropdown-menu {display: none;position: absolute;right: 0;bottom: 100%;top: auto;background: #fff;border: 1px solid var(--border);border-radius: 10px;box-shadow: var(--shadow-lg);z-index: 1000;min-width: 150px;overflow: hidden;animation: popIn 0.15s ease-out;}
+.fs-card-dropdown:hover .fs-dropdown-menu {display: block;}
+.fs-dropdown-item {width: 100%;padding: 10px 14px;display: flex;align-items: center;gap: 10px;border: none;background: none;font-family: 'DM Sans', sans-serif;font-size: 0.77rem;cursor: pointer;text-align: left;transition: background 0.15s;}
+.fs-dropdown-item:hover {background: var(--cream2);}
+.fs-dropdown-item--danger {color: var(--red);font-weight: 500;}

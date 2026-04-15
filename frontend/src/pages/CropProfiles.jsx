@@ -54,6 +54,8 @@ export default function CropProfilesPage() {
     refetch();
   };
 
+  const isValid = formData.name.trim() && formData.batch_id.trim();
+
   return (
     <>
       <div className="fs-page-header">
@@ -236,42 +238,50 @@ export default function CropProfilesPage() {
       {/* Modals */}
       {isCreating && (
         <div className="fs-modal-overlay">
-          <div className="fs-modal-card">
-            <h2 className="fs-modal-title">New Crop Profile</h2>
-            <form onSubmit={handleCreate}>
-              <div className="fs-form-group">
-                <label>Crop Name</label>
-                <input type="text" className="fs-input" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
-              </div>
-              <div className="fs-form-group">
-                <label>Batch Assignment</label>
-                <select className="fs-input" value={formData.batch_id} onChange={e => setFormData({ ...formData, batch_id: e.target.value })} required>
-                  <option value="">Select a Batch</option>
-                  {batches.map(b => (
-                    <option key={b.id} value={b.id}>{b.crop} ({b.id})</option>
-                  ))}
-                </select>
-              </div>
-              <div className="fs-form-group">
-                <label>Sensor Data ID</label>
-                <select className="fs-input" value={formData.sensor_data_id} onChange={e => setFormData({ ...formData, sensor_data_id: e.target.value })} required>
-                  <option value="">Select a Sensor</option>
-                  {sensors.map(s => (
-                    <option key={s.id} value={s.id}>{s.id} ({s.readable_time})</option>
-                  ))}
-                </select>
-              </div>
-              <div className="fs-form-group">
-                <label>Alert Condition</label>
-                <input type="text" className="fs-input" value={formData.alert} onChange={e => setFormData({ ...formData, alert: e.target.value })} placeholder="e.g. Moisture < 50%" />
-              </div>
-              <div className="fs-form-group">
-                <label>Farmer Notes</label>
-                <textarea className="fs-textarea" value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
-              </div>
-              <div style={{ display: "flex", gap: "10px", marginTop: "20px", justifyContent: "right" }}>
-                <button type="submit" className="fs-btn fs-btn--gold">Create Profile</button>
-                <button type="button" className="fs-btn fs-btn--ghost" onClick={() => setIsCreating(false)}>Cancel</button>
+          <div className="fs-modal">
+            <div style={{ padding: '24px', textAlign: 'center' }}>
+              <h2 style={{ margin: '0 0 8px 0', fontSize: '1.4rem' }}>New Crop Profile</h2>
+            </div>
+            <form onSubmit={handleCreate} style={{ padding: '0 24px 24px' }}>
+              <div style={{ display: 'grid', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px' }}>Crop Name</label>
+                  <input type="text" className="fs-search-input" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px' }}>Batch Assignment</label>
+                  <select className="fs-search-input" value={formData.batch_id} onChange={e => setFormData({ ...formData, batch_id: e.target.value })} required>
+                    <option value="">Select a Batch</option>
+                    {batches.map(b => (
+                      <option key={b.id} value={b.id}>{b.crop} ({b.id})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px' }}>Sensor ID</label>
+                  <select className="fs-search-input" value={formData.sensor_data_id} onChange={e => setFormData({ ...formData, sensor_data_id: e.target.value })} required>
+                    <option value="">Select a Sensor</option>
+                    {sensors.map(s => (
+                      <option key={s.id} value={s.id}>{s.id} ({s.readable_time})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px' }}>Alert Condition</label>
+                  <input type="text" className="fs-search-input" value={formData.alert} onChange={e => setFormData({ ...formData, alert: e.target.value })} placeholder="e.g. Moisture < 50%" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px' }}>Farmer Notes</label>
+                  <textarea rows="3" className="fs-search-input" value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
+                </div>
+                <div style={{ display: "flex", gap: "10px", marginTop: "20px", justifyContent: "right" }}>
+                  <button type="button" className="fs-btn fs-btn--ghost" onClick={() => setIsCreating(false)}>Cancel</button>
+                  <button type="submit" className="fs-btn fs-btn--gold" style={{
+                    padding: '10px 20px', background: 'var(--gold)', color: 'var(--charcoal)',
+                    opacity: (!isValid) ? 0.6 : 1,
+                    cursor: (!isValid) ? 'not-allowed' : 'pointer'
+                  }} disabled={!isValid}>Create Profile</button>
+                </div>
               </div>
             </form>
           </div>

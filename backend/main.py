@@ -25,7 +25,7 @@ app.add_middleware(
 
 load_dotenv()
 project_id = os.getenv("FIREBASE_PROJECT_ID")
-service_account_path = "gaia-sabah-c3-group2-aifarm-firebase-adminsdk-fbsvc-8548a13e75.json"
+service_account_path = "gaia-sabah-c3-group2-aifarm-02d42c9eeb6a.json"
 
 if os.path.exists(service_account_path):
     # runs on your local/cloud shell

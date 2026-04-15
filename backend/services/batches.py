@@ -9,20 +9,17 @@ router = APIRouter(prefix="/batches", tags=["batches"])
 class BatchCreate(BaseModel):
     crop: str
     location: str
-    planted: str
     notes: Optional[str] = None
 
 class BatchUpdate(BaseModel):
     crop: Optional[str] = None
     location: Optional[str] = None
-    planted: Optional[str] = None
     notes: Optional[str] = None
 
 class BatchResponse(BaseModel):
     id: str
     crop: str
     location: str
-    planted: str
     notes: Optional[str] = None
     sensor_data_id: Optional[str] = None
     sensor_data: Optional[Dict[str, Any]] = None
@@ -37,12 +34,9 @@ async def register_batch(batch: BatchCreate):
         for _ in existing_batches:
             raise HTTPException(status_code=400, detail=f"Location '{batch.location}' is already occupied.")
 
-        planted_date = parser.parse(batch.planted).date()
-        planted_str = planted_date.strftime("%d %b %Y")
         doc_ref = db.collection('batches').add({
             'crop': batch.crop,
             'location': batch.location,
-            'planted': planted_date.isoformat(),
             'notes': batch.notes,
             'created_at': firestore.SERVER_TIMESTAMP
         })
@@ -50,7 +44,7 @@ async def register_batch(batch: BatchCreate):
         db.collection('batches').document(doc_ref[1].id).update({
             'batch_id': batch_display_id
         })
-        return BatchResponse(id=batch_display_id, crop=batch.crop, location=batch.location, planted=planted_str, notes=batch.notes)
+        return BatchResponse(id=batch_display_id, crop=batch.crop, location=batch.location, notes=batch.notes)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -69,7 +63,6 @@ async def get_batches():
         for doc in docs:
             data = doc.to_dict()
             batch_id = data.get('batch_id', doc.id[:10].upper())
-            planted_str = parser.parse(data.get('planted', '')).strftime("%d %b %Y") if data.get('planted') else 'Unknown'
             location = data.get('location', '')
             
             # Fetch the single latest sensor data based on location hardware mapping
@@ -127,7 +120,6 @@ async def get_batches():
                 'doc_id': doc.id,
                 'crop': data.get('crop', ''),
                 'location': location,
-                'planted': planted_str,
                 'notes': data.get('notes', ''),
                 'status': mapped_status,
                 'sensor_data_id': latest_sid,
@@ -153,9 +145,6 @@ async def update_batch_route(doc_id: str, batch: BatchUpdate):
                     raise HTTPException(status_code=400, detail=f"Location '{batch.location}' is already occupied.")
             update_data['location'] = batch.location
         if batch.notes is not None: update_data['notes'] = batch.notes
-        if batch.planted is not None:
-            planted_date = parser.parse(batch.planted).date()
-            update_data['planted'] = planted_date.isoformat()
         
         if update_data:
             db.collection('batches').document(doc_id).update(update_data)

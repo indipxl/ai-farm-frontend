@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useBatches } from "../useBatches";
+
 const MAP_BLOCKS = [
   { id: "A1", label: "A1", crop: "", status: "empty", name: "Chilli" }, { id: "A2", label: "A2", crop: "", status: "empty", name: "" },
   { id: "A3", label: "A3", crop: "", status: "empty", name: "" }, { id: "A4", label: "A4", crop: "", status: "empty", name: "" },
@@ -21,7 +24,16 @@ const THREAT_LOG = [
 ];
 
 export default function DiseaseMapPage() {
+  const { batches, loading } = useBatches();
+  const [selectedBatch, setSelectedBatch] = useState(null);
   const blockCls = { healthy: "fs-map-block--healthy", warning: "fs-map-block--warning", danger: "fs-map-block--danger", empty: "fs-map-block--empty" };
+
+  const getBatchAt = (locId) => {
+    return (batches || []).find(b => b.location && (b.location.toUpperCase() === locId.toUpperCase() || b.location.toUpperCase() === `BLOCK ${locId.toUpperCase()}`));
+  };
+
+  const statusLabel = { healthy: "Healthy", warning: "Warning", danger: "Danger" };
+  const pillCls = { healthy: "fs-pill--healthy", warning: "fs-pill--warning", danger: "fs-pill--danger" };
 
   return (
     <>
@@ -57,16 +69,28 @@ export default function DiseaseMapPage() {
             </div>
             <div className="fs-farm-map">
               <div className="fs-map-grid">
-                {MAP_BLOCKS.map(blk => (
-                  <div key={blk.id} className={`fs-map-block ${blockCls[blk.status]}`} title={`${blk.label}: ${blk.name || "Empty"}`}>
-                    <div className="fs-map-block__label">{blk.label}</div>
-                    {blk.crop && <div className="fs-map-block__crop">{blk.crop}</div>}
-                    <div className="fs-map-block__status">{blk.status !== "empty" ? blk.status : "–"}</div>
-                  </div>
-                ))}
+                {MAP_BLOCKS.map(blk => {
+                  const liveBatch = getBatchAt(blk.id);
+                  const status = liveBatch ? liveBatch.status : "empty";
+                  const emoji = liveBatch ? (liveBatch.crop.toLowerCase().includes('chilli') ? '🌶️' : '🌿') : "";
+
+                  return (
+                    <div
+                      key={blk.id}
+                      className={`fs-map-block ${blockCls[status]} ${liveBatch ? 'fs-map-block--active' : ''}`}
+                      title={liveBatch ? `${blk.id}: ${liveBatch.crop}` : `${blk.id}: Empty`}
+                      onClick={() => liveBatch && setSelectedBatch(liveBatch)}
+                      style={{ cursor: liveBatch ? 'pointer' : 'default' }}
+                    >
+                      <div className="fs-map-block__label">{blk.id}</div>
+                      {emoji && <div className="fs-map-block__crop">{emoji}</div>}
+                      <div className="fs-map-block__status">{status !== "empty" ? status : "–"}</div>
+                    </div>
+                  );
+                })}
               </div>
               <div className="fs-map-legend">
-                <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--red)" }} />Critical</div>
+                <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--red)" }} />Danger</div>
                 <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--amber)" }} />Warning</div>
                 <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--green-lt)" }} />Healthy</div>
                 <div className="fs-map-legend__item"><div className="fs-map-legend__dot" style={{ background: "var(--cream3)" }} />Unplanted</div>
@@ -89,8 +113,8 @@ export default function DiseaseMapPage() {
               </div>
               <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {[
-                  { block: "A1", risk: "Critical", col: "var(--red)" },
-                  { block: "A2", risk: "Critical", col: "var(--red)" },
+                  { block: "A1", risk: "Danger", col: "var(--red)" },
+                  { block: "A2", risk: "Danger", col: "var(--red)" },
                   { block: "B1", risk: "High risk", col: "var(--amber)" },
                   { block: "A3", risk: "Watch", col: "var(--amber)" },
                 ].map(r => (
@@ -121,6 +145,56 @@ export default function DiseaseMapPage() {
           ))}
         </div>
       </div>
+      {selectedBatch && (
+        <div className="fs-modal-overlay" onClick={() => setSelectedBatch(null)} style={{ zIndex: 9999 }}>
+          <div className="fs-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '420px' }}>
+            <div style={{ padding: '24px' }}>
+              <div className="fs-modal__eyebrow">Sensor Data</div>
+              <div className="fs-batch-card__header">
+                <div>
+                  <div className="fs-batch-card__crop">{selectedBatch.crop}</div>
+                  <div className="fs-batch-card__loc">📍 {selectedBatch.location}</div>
+                  <div className="fs-batch-card__id">{selectedBatch.id}</div>
+                </div>
+                <span className={`fs-pill ${pillCls[selectedBatch.status]}`}>{statusLabel[selectedBatch.status]}</span>
+              </div>
+              <div className="fs-sensor-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+                <div className="fs-sensor-mini">
+                  <span className="fs-sensor-mini__icon">🌡️</span>
+                  <span className="fs-sensor-mini__name">Temp</span>
+                  <span className="fs-sensor-mini__val">{selectedBatch.sensor_data?.air?.temp ?? '--'}°C</span>
+                </div>
+                <div className="fs-sensor-mini">
+                  <span className="fs-sensor-mini__icon">💧</span>
+                  <span className="fs-sensor-mini__name">Moisture</span>
+                  <span className="fs-sensor-mini__val">{selectedBatch.sensor_data?.soil?.moisture ?? '--'}%</span>
+                </div>
+                <div className="fs-sensor-mini">
+                  <span className="fs-sensor-mini__icon">🌤️</span>
+                  <span className="fs-sensor-mini__name">Humidity</span>
+                  <span className="fs-sensor-mini__val">{selectedBatch.sensor_data?.air?.hum ?? '--'}%</span>
+                </div>
+                <div className="fs-sensor-mini">
+                  <span className="fs-sensor-mini__icon">⚗️</span>
+                  <span className="fs-sensor-mini__name">pH</span>
+                  <span className="fs-sensor-mini__val">{selectedBatch.sensor_data?.soil?.ph ?? '--'}</span>
+                </div>
+              </div>
+
+              {selectedBatch.sensor_data?.soil && (
+                <div style={{ background: 'var(--cream2)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 700 }}>Soil Nutrients (NPK mg/kg)</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
+                    <div style={{ color: 'var(--red)' }}>N: {selectedBatch.sensor_data.soil.n}</div>
+                    <div style={{ color: 'var(--gold)' }}>P: {selectedBatch.sensor_data.soil.p}</div>
+                    <div style={{ color: 'var(--green)' }}>K: {selectedBatch.sensor_data.soil.k}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
