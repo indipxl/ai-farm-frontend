@@ -101,7 +101,7 @@ def analyze_soil_with_llm(data, crop_retrieved):
     - Warning
     - Critical)
     3. SOIL HEALTH SCORE: Give a score based on all the sensor reading and the classification above. (Provide only the integer between 0 and 100)
-    4. RECOMMENDED ACTIONS: A brief recommendation on what the farmer should do next. If the crop is Healthy, praise the farmer and provide a recommendation on how to maintain the health of the crop. If the crop is not healthy, provide a recommendation on how to improve the health of the crop.
+    4. RECOMMENDED ACTIONS: Tell farmer what kind of disease and/or pest attack is likely to happen briefly. If there is no risk, tell no risk of disease and/or pest attack.Do not explain anything, give a short recommendation on what the farmer should do next in array of 3 format.
     """
 
     response = client.models.generate_content(
