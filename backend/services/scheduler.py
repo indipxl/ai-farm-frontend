@@ -3,7 +3,7 @@ from firebase_admin import firestore
 from services.analysis_sensor_data import process_batch_analysis
 
 # The interval between AI analysis runs. 
-SCHEDULE_INTERVAL_SECONDS = 3 * 60  # in sec. so x min * 60 sec
+SCHEDULE_INTERVAL_SECONDS = 1440 * 60  # in sec. so x min * 60 sec
 
 async def automated_ai_loop():
     """
