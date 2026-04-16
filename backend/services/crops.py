@@ -49,7 +49,7 @@ class CropResponse(BaseModel):
 db = firestore.client()
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash",
+    model="gemini-2.5-flash",
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
