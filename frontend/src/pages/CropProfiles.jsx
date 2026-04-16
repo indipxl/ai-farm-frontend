@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCrops } from "../useCrops";
 import { useBatches } from "../useBatches";
 import { useSensors } from "../useSensors";
@@ -6,7 +6,7 @@ import EditCropModal from "../components/EditCropModal";
 import DeleteCropModal from "../components/DeleteCropModal";
 
 export default function CropProfilesPage() {
-  const { crops: CROP_PROFILES = [], createCrop, updateCrop, deleteCrop, refetch } = useCrops();
+  const { crops: CROP_PROFILES = [], createCrop, updateCrop, deleteCrop, refetch, generateRecipe, predictOutcome } = useCrops();
   const { batches = [] } = useBatches();
   const { sensors = [] } = useSensors();
   console.log(sensors, "sensors")
@@ -14,7 +14,7 @@ export default function CropProfilesPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingCrop, setEditingCrop] = useState(null);
   const [deletingCrop, setDeletingCrop] = useState(null);
-  const [formData, setFormData] = useState({ name: "", alert: "", notes: "", batch_id: "", sensor_data_id: "" });
+  const [formData, setFormData] = useState({ name: "", batch_id: "", sensor_data_id: "" });
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,14 +22,67 @@ export default function CropProfilesPage() {
   const totalPages = Math.ceil(CROP_PROFILES.length / itemsPerPage);
   const displayedCrops = CROP_PROFILES.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  const [prompt, setPrompt] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [prediction, setPrediction] = useState(null);
+  const [tempParams, setTempParams] = useState(null);
+
   const profile = selected ? CROP_PROFILES.find(p => p.id === selected) : null;
+
+  useEffect(() => {
+    if (profile) {
+      // Prioritize initial_params as requested, then target_params
+      setTempParams(profile.initial_params || profile.target_params || { moisture: 60, temp: 24.9, hum: 65, ph: 6.0 });
+      setPrediction(profile.prediction_data || null);
+    } else {
+      setTempParams(null);
+      setPrediction(null);
+      setPrompt("");
+    }
+  }, [profile]);
+
+  const handlePromptGenerate = async () => {
+    if (!prompt) return;
+    setGenerating(true);
+    try {
+      const data = await generateRecipe(profile.name, prompt);
+      setTempParams(data.params);
+      fetchPrediction(data.params);
+    } catch {
+      alert("AI generation failed.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const fetchPrediction = async (params) => {
+    try {
+      const data = await predictOutcome(params);
+      setPrediction(data);
+    } catch {
+      console.error("Prediction failed");
+    }
+  };
+
+  const handleSaveRecipe = async () => {
+    if (!profile) return;
+    try {
+      await updateCrop(profile.id, {
+        ...profile,
+        target_params: tempParams,
+        prediction_data: prediction
+      });
+      alert("AI Recipe & Predictions Saved to Database!");
+      refetch();
+    } catch {
+      alert("Save failed.");
+    }
+  };
 
   const handleOpenCreateModal = () => {
     const latestSensorId = sensors.length > 0 ? sensors[0].id : "";
     setFormData({
       name: "",
-      alert: "",
-      notes: "",
       batch_id: "",
       sensor_data_id: latestSensorId
     });
@@ -40,7 +93,7 @@ export default function CropProfilesPage() {
     e.preventDefault();
     await createCrop(formData);
     setIsCreating(false);
-    setFormData({ name: "", alert: "", notes: "", batch_id: "", sensor_data_id: "" });
+    setFormData({ name: "", batch_id: "", sensor_data_id: "" });
     refetch();
   };
 
@@ -155,38 +208,107 @@ export default function CropProfilesPage() {
         <div>
           {profile ? (
             <div className="fs-recipe-editor">
-              <div className="fs-recipe-editor__title">{profile.emoji} {profile.name}</div>
-              <div className="fs-recipe-editor__sub">Adjust target ranges — AI alerts trigger when readings fall outside these bounds</div>
+              <div style={{ background: 'rgba(61,107,58,0.08)', borderRadius: '12px', padding: '16px', marginBottom: '20px', border: '1px solid rgba(61,107,58,0.2)' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.55rem", color: "var(--green)", marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: '700' }}>AI Farm Prompt Engine</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    rows={3}
+                    placeholder="e.g. 'Maximize sweetness' or 'Fast growth for monsoon'..."
+                    className="fs-search-input"
+                    style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--gold-dim)', color: '#000' }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      className="fs-btn fs-btn--gold fs-btn--sm"
+                      onClick={handlePromptGenerate}
+                      disabled={generating}
+                    >
+                      {generating ? '✨ Analyzing...' : '✨ Generate'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.62rem", color: "var(--gold-dim)", textTransform: "uppercase", letterSpacing: "1px" }}>Active Recipe Parameters</div>
+                <div style={{ fontSize: '0.6rem', color: 'var(--text-dim)' }}>Baseline: {profile.initial_params?.moisture}% Moisture / {profile.initial_params?.temp}°C Temp</div>
+              </div>
+
               <div className="fs-recipe-editor__grid">
                 <div className="fs-range-row">
-                  <label>Soil Moisture (%) <span>{profile.sensor_data?.soil?.moisture ?? 0}%</span></label>
-                  <input type="range" value={profile.sensor_data?.soil?.moisture ?? 0} />
+                  <label>Soil Moisture (%) <span>{tempParams?.moisture ?? 0}%</span></label>
+                  <input
+                    type="range"
+                    value={tempParams?.moisture ?? 0}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value);
+                      const p = { ...tempParams, moisture: v };
+                      setTempParams(p);
+                      fetchPrediction(p);
+                    }}
+                  />
                 </div>
                 <div className="fs-range-row">
-                  <label>Temperature (°C) <span>{profile.sensor_data?.air?.temp ?? 0}°C</span></label>
-                  <input type="range" value={profile.sensor_data?.air?.temp ?? 0} />
+                  <label>Temperature (°C) <span>{tempParams?.temp ?? 0}°C</span></label>
+                  <input
+                    type="range"
+                    value={tempParams?.temp ?? 0}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value);
+                      const p = { ...tempParams, temp: v };
+                      setTempParams(p);
+                      fetchPrediction(p);
+                    }}
+                  />
                 </div>
                 <div className="fs-range-row">
-                  <label>Humidity (%) <span>{profile.sensor_data?.air?.hum ?? 0}%</span></label>
-                  <input type="range" value={profile.sensor_data?.air?.hum ?? 0} />
+                  <label>Humidity (%) <span>{tempParams?.hum ?? 0}%</span></label>
+                  <input
+                    type="range"
+                    value={tempParams?.hum ?? 0}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value);
+                      const p = { ...tempParams, hum: v };
+                      setTempParams(p);
+                      fetchPrediction(p);
+                    }}
+                  />
                 </div>
                 <div className="fs-range-row">
-                  <label>Soil pH <span>{profile.sensor_data?.soil?.ph ?? 0}</span></label>
-                  <input type="range" value={profile.sensor_data?.soil?.ph ?? 0} />
+                  <label>Soil pH <span>{tempParams?.ph ?? 0}</span></label>
+                  <input
+                    type="range"
+                    step="0.1"
+                    min="4"
+                    max="9"
+                    value={tempParams?.ph ?? 0}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      const p = { ...tempParams, ph: v };
+                      setTempParams(p);
+                      fetchPrediction(p);
+                    }}
+                  />
                 </div>
               </div>
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.62rem", color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Alert Condition</div>
-                <div style={{ background: "var(--cream2)", borderRadius: 8, padding: "10px 12px", fontSize: "0.77rem", color: "var(--dark)", border: "1px solid var(--border)", textAlign: 'left' }}>{profile.alert}</div>
 
+              <div style={{ background: "rgba(61,107,58,0.08)", border: "1px solid rgba(61,107,58,0.2)", borderRadius: 12, padding: 14, marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.6rem", color: "var(--green)", fontWeight: 700 }}>AI PREDICTED OUTCOME</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--green)' }}>
+                    Grade-A Yield: {prediction?.grade_a ?? '92'}%
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--charcoal)', lineHeight: 1.4 }}>
+                  {prediction?.reasoning ?? ' No reasoning.'}
+                </div>
               </div>
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.62rem", color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Farmer Notes / Custom Recipe</div>
-                <textarea className="fs-textarea" rows={3} defaultValue={profile.notes} />
-              </div>
+
               <div style={{ display: "flex", gap: 10 }}>
-                <button className="fs-btn fs-btn--gold" style={{ flex: 1, justifyContent: "center" }}>Edit Profile</button>
-                <button className="fs-btn fs-btn--ghost" onClick={() => setSelected(null)}>Cancel</button>
+                <button className="fs-btn fs-btn--gold" style={{ flex: 1, justifyContent: "center" }} onClick={handleSaveRecipe}>Save</button>
+                <button className="fs-btn fs-btn--ghost" onClick={() => { setSelected(null); setTempParams(null); }}>Close</button>
               </div>
             </div>
           ) : (
@@ -194,46 +316,12 @@ export default function CropProfilesPage() {
               <div className="fs-card__body" style={{ textAlign: "center", padding: "48px 24px" }}>
                 <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🌱</div>
                 <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: "1.1rem", marginBottom: 6 }}>Select a profile to edit</div>
-                <div style={{ fontSize: "0.8rem", color: "var(--text-dim)", lineHeight: 1.6 }}>Click any crop profile on the left to open the recipe editor and customise your target thresholds and alert conditions.</div>
-              </div>
-            </div>
-          )}
-
-          {profile && (
-            <div className="fs-card" style={{ marginTop: 18 }}>
-              <div className="fs-card__header">
-                <div>
-                  <div className="fs-card__title">AI Profile Suggestions</div>
-                  <div className="fs-card__sub">Based on your current readings &amp; crop type</div>
-                </div>
-              </div>
-              <div className="fs-card__body">
-                <div className="fs-suggestion" style={{ marginBottom: 10 }}>
-                  <div className="fs-suggestion__label">Optimisation</div>
-                  Your moisture threshold (current: {profile.sensor_data?.soil?.moisture ?? 0}%) is slightly high for {profile.name}. Research suggests {profile.params?.[0]?.min ?? 0}–{profile.params?.[0]?.max ?? 0}% reduces fungal risk without stress.
-                </div>
-                <div className="fs-suggestion">
-                  <div className="fs-suggestion__label">Seasonal Adjustment</div>
-                  March–April is peak humidity season in Kota Kinabalu. Consider lowering your humidity alert threshold to 70% to get earlier warnings before fungal conditions develop.
-                </div>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-dim)", lineHeight: 1.6 }}>Click any crop profile on the left to open the recipe intelligence center and customise your target thresholds.</div>
               </div>
             </div>
           )}
         </div>
       </div>
-
-
-      {/* <div>
-          <div className="fs-card">
-            <div className="fs-card__body" style={{ textAlign: "center", padding: "48px 24px" }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🌱</div>
-              <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: "1.1rem", marginBottom: 6 }}>Welcome to Crop Manager</div>
-              <div style={{ fontSize: "0.8rem", color: "var(--text-dim)", lineHeight: 1.6 }}>Quickly manage your crop profiles, sensor assignments, and alert thresholds from this dashboard.</div>
-            </div>
-          </div>
-        </div> */}
-
-
 
       {/* Modals */}
       {isCreating && (
@@ -266,22 +354,14 @@ export default function CropProfilesPage() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px' }}>Alert Condition</label>
-                  <input type="text" className="fs-search-input" value={formData.alert} onChange={e => setFormData({ ...formData, alert: e.target.value })} placeholder="e.g. Moisture < 50%" />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px' }}>Farmer Notes</label>
-                  <textarea rows="3" className="fs-search-input" value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
-                </div>
-                <div style={{ display: "flex", gap: "10px", marginTop: "20px", justifyContent: "right" }}>
-                  <button type="button" className="fs-btn fs-btn--ghost" onClick={() => setIsCreating(false)}>Cancel</button>
-                  <button type="submit" className="fs-btn fs-btn--gold" style={{
-                    padding: '10px 20px', background: 'var(--gold)', color: 'var(--charcoal)',
-                    opacity: (!isValid) ? 0.6 : 1,
-                    cursor: (!isValid) ? 'not-allowed' : 'pointer'
-                  }} disabled={!isValid}>Create Profile</button>
-                </div>
+              </div>
+              <div style={{ display: "flex", gap: "10px", marginTop: "20px", justifyContent: "right" }}>
+                <button type="button" className="fs-btn fs-btn--ghost" onClick={() => setIsCreating(false)}>Cancel</button>
+                <button type="submit" className="fs-btn fs-btn--gold" style={{
+                  padding: '10px 20px', background: 'var(--gold)', color: 'var(--charcoal)',
+                  opacity: (!isValid) ? 0.6 : 1,
+                  cursor: (!isValid) ? 'not-allowed' : 'pointer'
+                }} disabled={!isValid}>Create Profile</button>
               </div>
             </form>
           </div>

@@ -49,7 +49,7 @@ class CropResponse(BaseModel):
 db = firestore.client()
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-2.5-flash-lite",
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
@@ -69,13 +69,31 @@ prediction_chain = PREDICTION_PROMPT | llm
 @router.post("/create-crops", response_model=CropResponse)
 async def create_crop(crop: CropCreate):
     try:
+        sensor_ref = db.collection('sensor_data').document(crop.sensor_data_id).get()
+
+        if not sensor_ref.exists:
+            # Fallback values if the specific sensor ID isn't found
+            initial_vals = {"moisture": 0.0, "temp": 0.0, "hum": 0.0, "ph": 0.0}
+        else:
+            s_data = sensor_ref.to_dict()
+            # Mapping your sensor schema (assuming nested 'air' and 'soil' based on your GET logic)
+            initial_vals = {
+                "moisture": float(s_data.get('soil', {}).get('moisture', 0.0)),
+                "temp": float(s_data.get('air', {}).get('temp', 0.0)),
+                "hum": float(s_data.get('air', {}).get('hum', 0.0)),
+                "ph": float(s_data.get('soil', {}).get('ph', 0.0))
+            }
+
+        # 2. Define target_params as 0
+        target_vals = {"moisture": 0.0, "temp": 0.0, "hum": 0.0, "ph": 0.0}
+
         doc_ref = db.collection('crops').add({
             'name': crop.name,
             'status': crop.status,
             'batch_id': crop.batch_id,
             'sensor_data_id': crop.sensor_data_id,
-            'target_params': crop.target_params or {"moisture": 60, "temp": 24.5, "hum": 65, "ph": 6.0},
-            'initial_params': crop.target_params or {"moisture": 60, "temp": 24.5, "hum": 65, "ph": 6.0},
+            'target_params': target_vals,
+            'initial_params': initial_vals,
             'created_at': firestore.SERVER_TIMESTAMP
         })
         return await get_crop(doc_ref[1].id)

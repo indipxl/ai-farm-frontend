@@ -124,9 +124,9 @@ export default function FieldMap({ batches }) {
                                 <div style={{ background: 'var(--cream2)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
                                     <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 700 }}>Soil Nutrients (NPK mg/kg)</div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
-                                        <div style={{ color: 'var(--red)' }}>N: {selectedBatch.sensor_data.soil.n}</div>
-                                        <div style={{ color: 'var(--gold)' }}>P: {selectedBatch.sensor_data.soil.p}</div>
-                                        <div style={{ color: 'var(--green)' }}>K: {selectedBatch.sensor_data.soil.k}</div>
+                                        <div style={{ color: 'var(--red)' }}>N: {selectedBatch.sensor_data.soil.est_n}</div>
+                                        <div style={{ color: 'var(--gold)' }}>P: {selectedBatch.sensor_data.soil.est_p}</div>
+                                        <div style={{ color: 'var(--green)' }}>K: {selectedBatch.sensor_data.soil.est_k}</div>
                                     </div>
                                 </div>
                             )}

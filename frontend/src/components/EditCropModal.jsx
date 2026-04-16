@@ -5,9 +5,7 @@ export default function EditCropModal({ crop, batches, sensors, onClose, onSubmi
     const [formData, setFormData] = useState({
         name: crop?.name || '',
         batch_id: crop?.batch_id || '',
-        sensor_data_id: crop?.sensor_data_id || '',
-        alert: crop?.alert || '',
-        notes: crop?.notes || ''
+        sensor_data_id: crop?.sensor_data_id || ''
     });
     const [submitting, setSubmitting] = useState(false);
 
@@ -60,14 +58,6 @@ export default function EditCropModal({ crop, batches, sensors, onClose, onSubmi
                                     <option key={s.id} value={s.id}>{s.id} ({s.readable_time})</option>
                                 ))}
                             </select>
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px' }}>Alert Condition</label>
-                            <input name="alert" value={formData.alert} onChange={handleChange} className="fs-search-input" placeholder="e.g. Moisture < 50%" />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '6px' }}>Farmer Notes</label>
-                            <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3" className="fs-search-input" />
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>

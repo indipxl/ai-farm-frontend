@@ -61,6 +61,26 @@ export const useCrops = () => {
     fetchCrops();
   };
 
-  return { crops, loading, error, refetch: fetchCrops, createCrop, updateCrop, deleteCrop };
+  const generateRecipe = async (cropName, prompt) => {
+    const response = await fetch(`${API_BASE_URL}/api/crops/generate-recipe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ crop_name: cropName, prompt })
+    });
+    if (!response.ok) throw new Error('Auto-Tune failed');
+    return await response.json();
+  };
+
+  const predictOutcome = async (params) => {
+    const response = await fetch(`${API_BASE_URL}/api/crops/predict-outcome`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    if (!response.ok) throw new Error('Prediction failed');
+    return await response.json();
+  };
+
+  return { crops, loading, error, refetch: fetchCrops, createCrop, updateCrop, deleteCrop, generateRecipe, predictOutcome };
 };
 
