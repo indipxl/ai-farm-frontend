@@ -24,6 +24,7 @@ export default function CropProfilesPage() {
 
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [prediction, setPrediction] = useState(null);
   const [tempParams, setTempParams] = useState(null);
 
@@ -31,8 +32,13 @@ export default function CropProfilesPage() {
 
   useEffect(() => {
     if (profile) {
-      // Prioritize initial_params as requested, then target_params
-      setTempParams(profile.initial_params || profile.target_params || { moisture: 60, temp: 24.9, hum: 65, ph: 6.0 });
+      // Check if target_params got actual values (not just the default 0 from creation)
+      const hasTarget = profile.target_params && profile.target_params.moisture > 0;
+      const defaultParams = { moisture: 60, temp: 24.9, hum: 65, ph: 6.0 };
+
+      setTempParams(
+        hasTarget ? profile.target_params : (profile.initial_params || defaultParams)
+      );
       setPrediction(profile.prediction_data || null);
     } else {
       setTempParams(null);
@@ -66,6 +72,7 @@ export default function CropProfilesPage() {
 
   const handleSaveRecipe = async () => {
     if (!profile) return;
+    setSaving(true);
     try {
       await updateCrop(profile.id, {
         ...profile,
@@ -76,6 +83,8 @@ export default function CropProfilesPage() {
       refetch();
     } catch {
       alert("Save failed.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -223,7 +232,8 @@ export default function CropProfilesPage() {
                     <button
                       className="fs-btn fs-btn--gold fs-btn--sm"
                       onClick={handlePromptGenerate}
-                      disabled={generating}
+                      disabled={generating || !prompt}
+                      style={{ opacity: generating ? 0.7 : 1, cursor: generating ? 'not-allowed' : 'pointer' }}
                     >
                       {generating ? '✨ Analyzing...' : '✨ Generate'}
                     </button>
@@ -233,7 +243,6 @@ export default function CropProfilesPage() {
 
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.62rem", color: "var(--gold-dim)", textTransform: "uppercase", letterSpacing: "1px" }}>Active Recipe Parameters</div>
-                <div style={{ fontSize: '0.6rem', color: 'var(--text-dim)' }}>Baseline: {profile.initial_params?.moisture}% Moisture / {profile.initial_params?.temp}°C Temp</div>
               </div>
 
               <div className="fs-recipe-editor__grid">
@@ -307,8 +316,26 @@ export default function CropProfilesPage() {
               </div>
 
               <div style={{ display: "flex", gap: 10 }}>
-                <button className="fs-btn fs-btn--gold" style={{ flex: 1, justifyContent: "center" }} onClick={handleSaveRecipe}>Save</button>
-                <button className="fs-btn fs-btn--ghost" onClick={() => { setSelected(null); setTempParams(null); }}>Close</button>
+                <button
+                  className="fs-btn fs-btn--gold"
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    opacity: (saving || generating) ? 0.7 : 1,
+                    cursor: (saving || generating) ? 'not-allowed' : 'pointer'
+                  }}
+                  onClick={handleSaveRecipe}
+                  disabled={saving || generating}
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  className="fs-btn fs-btn--ghost"
+                  onClick={() => { setSelected(null); setTempParams(null); }}
+                  disabled={saving || generating}
+                >
+                  Close
+                </button>
               </div>
             </div>
           ) : (
