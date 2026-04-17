@@ -16,7 +16,7 @@ router = APIRouter(prefix="/image", tags=["image"])
 
 # Gemini LLM
 llm = ChatGoogleGenerativeAI(
-    model="gemini-3.1-flash-lite",
+    model="gemini-2.5-flash",
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
