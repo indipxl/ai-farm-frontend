@@ -345,3 +345,9 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--charco
 .fs-dropdown-item {width: 100%;padding: 10px 14px;display: flex;align-items: center;gap: 10px;border: none;background: none;font-family: 'DM Sans', sans-serif;font-size: 0.77rem;cursor: pointer;text-align: left;transition: background 0.15s;}
 .fs-dropdown-item:hover {background: var(--cream2);}
 .fs-dropdown-item--danger {color: var(--red);font-weight: 500;}
+.login-root-container {display: flex; flex-direction: row; min-height: 100vh; width: 100vw; overflow-x: hidden;}
+@media (max-width: 768px) {
+  .login-root-container {flex-direction: column; overflow-y: auto;}
+  .login-left-panel {width: 100% !important; min-height: auto;}
+  .login-left-panel {padding-bottom: 2rem;}
+}
