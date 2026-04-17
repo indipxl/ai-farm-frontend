@@ -22,38 +22,34 @@ llm = ChatGoogleGenerativeAI(
 
 # Prompt
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an expert agricultural scientist and plant pathologist specialising in crop disease and pest detection in Malaysian tropical farms."),
+    ("system", "You are an expert plant pathologist. Your task is to analyze images for pests and diseases."),
     ("human", [
         {
             "type": "text",
-            "text": """You are a crop disease and pest detection AI. Analyze the plant image provided and respond ONLY in this exact JSON format with no extra text or markdown:
+            "text": """
+Analyze this image focusing ONLY on the {expected_crop}. 
 
+Rules for Hallucination Prevention:
+1. Ignore all background objects (tractors, people, tools, buildings, or sky). 
+2. If shadows create dark spots, do not mistake them for fungus.
+3. Determine if the main subject is actually a {expected_crop}.
+
+Return ONLY JSON:
 {{
-  "detection": "detected disease or pest name, or 'No Disease or Pest Detected'",
-  "confidence": 91,
+  "is_correct_crop": true | false,
+  "detection": "disease name or 'Healthy'",
+  "confidence": 0-100,
   "status": "danger | warning | healthy",
-  "detail": "one sentence description of what you see in the image",
-  "suggestions": [
-    "action 1",
-    "action 2",
-    "action 3"
-  ]
+  "detail": "Description focusing ONLY on the plant tissue",
+  "suggestions": ["action 1", "action 2", "action 3"]
 }}
 
-Rules:
-- confidence is a number between 0 and 100
-- status is exactly one of: danger, warning, healthy
-- suggestions must be an array of 3 practical farming actions
-- Be specific to Malaysian tropical farming conditions
-- If image is not a plant, return status: healthy with detection: 'Unable to analyse — please upload a clear plant photo'
+If the image is NOT a {expected_crop}, set "is_correct_crop": false.
 """,
         },
         {
             "type": "image_url",
-            "image_url": {
-                "url": "data:image/jpeg;base64,{image}",
-                "detail": "low",
-            }
+            "image_url": {"url": "data:image/jpeg;base64,{image}", "detail": "high"}
         }
     ])
 ])
@@ -64,41 +60,48 @@ def encode_image(image_bytes: bytes) -> str:
     return base64.b64encode(image_bytes).decode()
 
 @router.post("/upload-image-analysis")
-async def analysis(file: UploadFile = File(...)):
+async def analysis(file: UploadFile = File(...), batch_id: str = None):
     try:
+        # Fetch the expected crop name from Firestore using batch_id
+        expected_crop = "any tropical plant"
+        if batch_id:
+            batch_doc = db.collection('batches').document(batch_id).get()
+            if batch_doc.exists:
+                expected_crop = batch_doc.to_dict()['crop'].lower().strip()
+
         # Read and encode image
         image_bytes = await file.read()
         image_b64 = encode_image(image_bytes)
 
         # Run Gemini analysis
-        response = chain.invoke({"image": image_b64})
+        response = chain.invoke({
+            "image": image_b64,
+            "expected_crop": expected_crop
+        })
 
-        # Parse JSON from Gemini response
-        raw = response.content.strip()
-
-        # Strip markdown code fences if Gemini wraps in ```json ... ```
-        raw = re.sub(r"```json|```", "", raw).strip()
-
+        raw = re.sub(r"```json|```", "", response.content).strip()
         result = json.loads(raw)
 
+        # 4. Handle the "Wrong Plant" Error
+        if result.get("is_correct_crop") is False:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Verification Failed: The uploaded image does not appear to be {expected_crop}. Please upload the correct crop image."
+            )
+
         return {
-            "success":    True,
-            "detection":  result.get("detection",  "Unknown"),
-            "confidence": result.get("confidence", 0),
-            "status":     result.get("status",     "healthy"),
-            "detail":     result.get("detail",     ""),
-            "suggestions":result.get("suggestions",[]),
+            "success": True,
+            "detection": result.get("detection"),
+            "confidence": result.get("confidence"),
+            "status": result.get("status"),
+            "detail": result.get("detail"),
+            "suggestions": result.get("suggestions"),
         }
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        return {
-            "success":    False,
-            "detection":  "Analysis Failed",
-            "confidence": 0,
-            "status":     "healthy",
-            "detail":     f"Error: {str(e)}",
-            "suggestions":["Please try again", "Ensure image is clear", "Check internet connection"],
-        }
+        return {"success": False, "detail": str(e)}
     
 class ImageAnalysisCreate(BaseModel):
     batch_id: str
