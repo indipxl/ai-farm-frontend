@@ -1,20 +1,24 @@
 import { Link, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
 
+import { useFarmSettings } from "../useFarmSettings";
+
 const NAV_ITEMS = [
     { path: "/dashboard", icon: "🏠", label: "Dashboard", section: "Main" },
-    { path: "/soil-health", icon: "🪱", label: "Soil Health", section: "Monitoring" },
+    { path: "/soil-health", icon: "🪱", label: "Soil Monitor", section: "Monitoring" },
     { path: "/disease-map", icon: "🗺️", label: "Disease Map", section: "Monitoring" },
     { path: "/batch-profiles", icon: "🌱", label: "Batch Profiles", section: "Configuration" },
     { path: "/crop-profiles", icon: "🌱", label: "Crop Profiles", section: "Configuration" },
+    { path: "/farm-layout", icon: "🗺️", label: "Farm Layout", section: "Configuration" },
 ];
 
 export default function Sidebar() {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+    const { settings } = useFarmSettings();
 
     const handleLogout = async () => {
         try {
@@ -25,11 +29,47 @@ export default function Sidebar() {
         }
     };
 
+    const [dynamicLocation, setDynamicLocation] = useState(null);
+
     const groupedNav = NAV_ITEMS.reduce((acc, item) => {
         if (!acc[item.section]) acc[item.section] = [];
         acc[item.section].push(item);
         return acc;
     }, {});
+
+    useEffect(() => {
+        // Auto-geocode the pin if no explicit location string is set
+        if (settings && !settings.farm_location && settings.location_lat && settings.location_lng) {
+            const fetchLocation = async () => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${settings.location_lat}&lon=${settings.location_lng}&format=json`);
+                    const data = await res.json();
+                    if (data && data.address) {
+                        const city = data.address.city || data.address.town || data.address.village || data.address.county || "";
+                        const state = data.address.state || "";
+                        const country = data.address.country || "";
+                        
+                        let parts = [];
+                        if (city) parts.push(city);
+                        if (state && state !== city) parts.push(state);
+                        if (country) parts.push(country);
+                        
+                        if (parts.length > 0) {
+                           setDynamicLocation(parts.join(', '));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Sidebar reverse geocoding failed", e);
+                }
+            };
+            fetchLocation();
+        } else if (settings && settings.farm_location) {
+            setDynamicLocation(settings.farm_location);
+        }
+    }, [settings]);
+
+    const displayFarmName = settings?.farm_name || "Ai Farm";
+    const displayFarmLocation = dynamicLocation || "Kota Kinabalu · KK-001";
 
     return (
         <aside className={`fs-sidebar${isCollapsed ? " fs-sidebar--collapsed" : ""}`}>
@@ -39,12 +79,12 @@ export default function Sidebar() {
                 title="Toggle Sidebar"
             >
                 {isCollapsed ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M18 6 6 18" />
                         <path d="m6 6 12 12" />
                     </svg>
                 ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="3" x2="21" y1="6" y2="6" />
                         <line x1="3" x2="21" y2="12" />
                         <line x1="3" x2="21" y3="18" />
@@ -56,8 +96,8 @@ export default function Sidebar() {
                 <div className="fs-sidebar__name"><span>Ai</span> Farm</div>
             </div>
             <div className="fs-sidebar__farm">
-                <div className="fs-sidebar__farm-label">Active Farm</div>
-                <div className="fs-sidebar__farm-name">Kota Kinabalu · KK-001</div>
+                <div className="fs-sidebar__farm-label">{displayFarmName}</div>
+                <div className="fs-sidebar__farm-name">{displayFarmLocation}</div>
             </div>
             <nav className="fs-sidebar__nav">
                 {Object.entries(groupedNav).map(([section, items]) => (

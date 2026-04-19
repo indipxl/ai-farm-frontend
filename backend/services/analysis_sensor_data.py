@@ -102,7 +102,11 @@ def analyze_soil_with_llm(data, crop_retrieved):
     - Critical)
     3. SOIL HEALTH SCORE: Give a score based on all the sensor reading and the classification above. (Provide only the integer between 0 and 100)
     4. RECOMMENDED ACTIONS: Briefly state what disease or pest attack is likely. If none, state "No risk of disease or pest attack". 
-    Followed by exactly 3 short actionable recommendations in this array format: ["Action 1", "Action 2", "Action 3"].
+    Followed by exactly 3 short actionable recommendations in this list format with new line each: 
+    Action 1: 
+    Action 2:
+    Action 3: 
+    Strict Rule: You must press "Enter" twice between each Action so there is a blank line between them.
     """
 
     response = client.models.generate_content(
@@ -204,9 +208,10 @@ def process_batch_analysis(batch_data: dict, batch_id: str):
         
     location_key = location.strip().upper()
     
-    sensor_collection = LOCATION_SENSOR_MAP.get(location_key)
-    if not sensor_collection:
-        raise ValueError(f"Invalid location '{location}'. Cannot find a matching sensor for this block.")
+    sensor_collection = 'sensor_data'
+    if location_key.startswith('BLOCK '):
+        block_id = location_key.replace('BLOCK ', '').strip().lower()
+        sensor_collection = f"sensor_{block_id}_data"
 
     sensor_reading = get_latest_sensor_data(sensor_collection)
     if not sensor_reading:
@@ -227,7 +232,7 @@ def process_batch_analysis(batch_data: dict, batch_id: str):
         "analysis": analysis
     }
 
-# API endpoint
+# API endpoint for single batch
 @router.get("/analyze/{batch_id}")
 async def trigger_analysis(batch_id: str):
     batch_data = get_batch_data(batch_id)
@@ -242,3 +247,31 @@ async def trigger_analysis(batch_id: str):
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# API endpoint for all batches
+@router.get("/analyze")
+async def trigger_analysis_all():
+    batches_ref = db.collection('batches').get()
+    processed_count = 0
+    errors = []
+    
+    for doc in batches_ref:
+        batch_data = doc.to_dict()
+        batch_id = doc.id
+        batch_data['__doc_id'] = batch_id 
+        
+        if batch_data.get('status') == 'archived':
+            continue
+            
+        location = batch_data.get('location', '')
+        if not location or location.strip() == '':
+            continue
+            
+        try:
+            import asyncio
+            await asyncio.to_thread(process_batch_analysis, batch_data, batch_id)
+            processed_count += 1
+        except Exception as e:
+            errors.append(f"Batch {batch_id}: {str(e)}")
+            
+    return {"status": "success", "processed": processed_count, "errors": errors}

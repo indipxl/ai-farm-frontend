@@ -151,6 +151,7 @@ export default function CropProfilesPage() {
                 onClick={() => setSelected(selected === p.id ? null : p.id)}
               >
                 <div className="fs-profile-card__top">
+                  <div className="fs-profile-card__emoji">{p.name.toLowerCase().includes('chilli') ? '🌶️' : '🌿'}</div>
                   <div>
                     <div className="fs-profile-card__name">{p.name}</div>
                   </div>

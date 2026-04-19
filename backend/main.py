@@ -10,10 +10,10 @@ import asyncio
 
 app = FastAPI(title="Ai Farm API", version="1.0.0")
 
-@app.on_event("startup")
-async def startup_event():
-    from services.scheduler import automated_ai_loop
-    asyncio.create_task(automated_ai_loop())
+# @app.on_event("startup")
+# async def startup_event():
+#     from services.scheduler import automated_ai_loop
+#     asyncio.create_task(automated_ai_loop())
 
 app.add_middleware(
     CORSMiddleware,
@@ -55,6 +55,14 @@ app.include_router(sensor_analysis_router, prefix="/api")
 # image analysis
 from services.image_analysis import router as image_router
 app.include_router(image_router, prefix="/api")
+
+# farm settings
+from services.farm_settings import router as farm_settings_router
+app.include_router(farm_settings_router, prefix="/api")
+
+# disease prediction
+from services.disease_prediction import router as disease_router
+app.include_router(disease_router, prefix="/api")
 
 # if __name__ == "__main__":
 #     port = int(os.getenv('PORT', 8080))

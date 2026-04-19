@@ -67,7 +67,10 @@ async def get_batches():
             
             # Fetch the single latest sensor data based on location hardware mapping
             location_key = location.strip().upper()
-            sensor_collection = LOCATION_SENSOR_MAP.get(location_key, 'sensor_data')
+            sensor_collection = 'sensor_data'
+            if location_key.startswith('BLOCK '):
+                block_id = location_key.replace('BLOCK ', '').strip().lower()
+                sensor_collection = f"sensor_{block_id}_data"
             latest_sensor_data = None
             latest_sid = None
             sensor_docs = db.collection(sensor_collection).order_by('timestamp', direction=firestore.Query.DESCENDING).limit(1).stream()

@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useBatches } from '../useBatches';
+import { useFarmSettings } from '../useFarmSettings';
 
 export default function SoilHealthPage() {
     const { batches, loading, error } = useBatches();
     const [activeMetric, setActiveMetric] = useState('moisture');
 
-    if (loading) return <div className="fs-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><div className="fs-spinner"></div></div>;
+    const { settings, loading: settingsLoading } = useFarmSettings();
+
+    if (loading || settingsLoading) return <div className="fs-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><div className="fs-spinner"></div></div>;
     if (error) return <div className="fs-page"><div className="fs-card"><div className="fs-card__body">Error loading data: {error}</div></div></div>;
 
     // 1. Calculate Active Interventions Required
@@ -19,12 +22,10 @@ export default function SoilHealthPage() {
     }
 
     // 2. 7-Day Soil Health Trend
-    // Extrapolated/mocked positively since historical data isn't in single batch object
     const trendText = "+5%";
     const trendMeta = "Soil Health vs Last Week";
 
     // 3. Primary Farm-Wide Deficit
-    // For demo purposes, we do a basic check on ai_reports. If none, we default to Neutral.
     let rootDeficit = "Nitrogen";
     const reportText = criticalBlocks.map(b => b.ai_report?.analysis || "").join(" ").toLowerCase();
     if (reportText.includes("ph")) rootDeficit = "pH Imbalance";
@@ -38,9 +39,15 @@ export default function SoilHealthPage() {
     // Filter threats for the Feed
     const aiThreats = batches.filter(b => (b.status === 'danger' || b.status === 'warning') && b.ai_report);
 
-    // Heatmap config
-    const blocksRow = ['A', 'B', 'C', 'D'];
-    const blocksCol = [1, 2, 3, 4, 5, 6];
+    // Dynamic Heatmap config
+    const blocks = settings?.blocks || [];
+    const maxRow = blocks.length > 0 ? Math.max(...blocks.map(b => b.row)) : 0;
+    const maxCol = blocks.length > 0 ? Math.max(...blocks.map(b => b.col)) : 0;
+
+    const gridRows = maxRow + 1;
+    const gridCols = maxCol + 1;
+    const rows = Array.from({ length: gridRows }, (_, i) => i);
+    const cols = Array.from({ length: gridCols }, (_, i) => i);
 
     const getBatchForLocation = (locName) => {
         return batches.find(b => {
@@ -55,20 +62,27 @@ export default function SoilHealthPage() {
         let hue, lightness = 50, saturation = 70;
 
         if (metric === 'moisture') {
-            // Moisture: 0 (Yellow/Dry) -> 100 (Deep Blue/Wet)
-            // Yellow is hue 50, Blue is hue 220
             const pct = Math.max(0, Math.min(100, val));
             hue = 50 + (pct / 100) * 170;
         } else if (metric === 'temperature') {
-            // Temp: 15 (Blueish) -> 35 (Red/Hot)
-            // Blue = 220, Red = 0/360. 
             const pct = Math.max(0, Math.min(100, ((val - 15) / 20) * 100));
             hue = 220 - (pct / 100) * 220;
         } else if (metric === 'ph') {
-            // pH: <6 (Yellow/Acid), 6.5-7 (Green/Optimal), >7.5 (Blue/Alkaline)
             if (val < 6.0) hue = 50;
             else if (val <= 7.2) hue = 120;
             else hue = 200;
+        } else if (metric === 'n') {
+            hue = 0; // Red
+            saturation = 70;
+            lightness = 90 - (Math.min(val, 200) / 200) * 50; // Darkens as N increases
+        } else if (metric === 'p') {
+            hue = 45; // Gold
+            saturation = 80;
+            lightness = 90 - (Math.min(val, 100) / 100) * 50; // Darkens as P increases
+        } else if (metric === 'k') {
+            hue = 120; // Green
+            saturation = 60;
+            lightness = 90 - (Math.min(val, 200) / 200) * 50; // Darkens as K increases
         } else {
             return '#333';
         }
@@ -80,7 +94,7 @@ export default function SoilHealthPage() {
             <div className="fs-page-header">
                 <div>
                     <div className="fs-page-eyebrow">Farm-Wide Analytics · Synced Now</div>
-                    <h1 className="fs-page-title">Topographic <em>Command Center</em></h1>
+                    <h1 className="fs-page-title">Soil <em>Monitor</em></h1>
                     <p className="fs-page-sub">Global macro-level environment metrics and mapping</p>
                 </div>
             </div>
@@ -121,15 +135,15 @@ export default function SoilHealthPage() {
                 </div>
             </div>
 
-            <div className="fs-grid-2" style={{ gridTemplateColumns: '2fr 1fr' }}>
+            <div style={{ marginTop: '2rem' }}>
                 {/* Heatmap Section */}
                 <div className="fs-card">
-                    <div className="fs-card__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="fs-card__header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' }}>
                         <div>
-                            <div className="fs-card__title">Interactive Metric Heatmap</div>
+                            <div className="fs-card__title">Heatmap</div>
                             <div className="fs-card__sub">Topographic visualization of physical farm plots</div>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px', background: 'var(--cream2)', padding: '4px', borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px', background: 'var(--cream2)', padding: '4px', borderRadius: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
                             <button
                                 className={`fs-btn fs-btn--sm ${activeMetric === 'temperature' ? 'fs-btn--primary' : 'fs-btn--ghost'}`}
                                 style={activeMetric !== 'temperature' ? { border: 'none' } : {}}
@@ -142,33 +156,62 @@ export default function SoilHealthPage() {
                                 className={`fs-btn fs-btn--sm ${activeMetric === 'ph' ? 'fs-btn--primary' : 'fs-btn--ghost'}`}
                                 style={activeMetric !== 'ph' ? { border: 'none' } : {}}
                                 onClick={() => setActiveMetric('ph')}>⚗️ pH</button>
+                            <button
+                                className={`fs-btn fs-btn--sm ${activeMetric === 'n' ? 'fs-btn--primary' : 'fs-btn--ghost'}`}
+                                style={activeMetric !== 'n' ? { border: 'none', color: 'var(--red)' } : {}}
+                                onClick={() => setActiveMetric('n')}>N</button>
+                            <button
+                                className={`fs-btn fs-btn--sm ${activeMetric === 'p' ? 'fs-btn--primary' : 'fs-btn--ghost'}`}
+                                style={activeMetric !== 'p' ? { border: 'none', color: 'var(--gold)' } : {}}
+                                onClick={() => setActiveMetric('p')}>P</button>
+                            <button
+                                className={`fs-btn fs-btn--sm ${activeMetric === 'k' ? 'fs-btn--primary' : 'fs-btn--ghost'}`}
+                                style={activeMetric !== 'k' ? { border: 'none', color: 'var(--green)' } : {}}
+                                onClick={() => setActiveMetric('k')}>K</button>
                         </div>
                     </div>
                     <div className="fs-card__body">
-                        <div className="fs-heatmap-grid" style={{ gridTemplateColumns: 'repeat(6, 1fr)', gridTemplateRows: 'repeat(4, 1fr)' }}>
-                            {blocksRow.map(row => (
-                                blocksCol.map(col => {
-                                    const locString = `BLOCK ${row}${col}`;
-                                    const batch = getBatchForLocation(locString);
-                                    let sensorVal = null;
+                        {blocks.length === 0 ? (
+                            <div style={{ padding: '2rem', textAlign: 'center' }}>
+                                <p>No blocks configured. Please set up your layout in Farm Layout.</p>
+                            </div>
+                        ) : (
+                            <div className="fs-heatmap-grid" style={{ 
+                                gridTemplateColumns: `repeat(${gridCols}, minmax(40px, 1fr))`, 
+                                gridTemplateRows: `repeat(${gridRows}, minmax(40px, 1fr))` 
+                            }}>
+                                {rows.map(r => (
+                                    cols.map(c => {
+                                        const block = blocks.find(b => b.row === r && b.col === c);
+                                        
+                                        if (block) {
+                                            const batch = getBatchForLocation(block.label);
+                                            let sensorVal = null;
 
-                                    if (batch?.sensor_data?.soil) {
-                                        if (activeMetric === 'moisture') sensorVal = batch.sensor_data.soil.moisture;
-                                        if (activeMetric === 'temperature') sensorVal = batch.sensor_data.soil.temp;
-                                        if (activeMetric === 'ph') sensorVal = batch.sensor_data.soil.ph;
-                                    }
+                                            if (batch?.sensor_data?.soil) {
+                                                if (activeMetric === 'moisture') sensorVal = batch.sensor_data.soil.moisture;
+                                                if (activeMetric === 'temperature') sensorVal = batch.sensor_data.soil.temp;
+                                                if (activeMetric === 'ph') sensorVal = batch.sensor_data.soil.ph;
+                                                if (activeMetric === 'n') sensorVal = batch.sensor_data.soil.est_n;
+                                                if (activeMetric === 'p') sensorVal = batch.sensor_data.soil.est_p;
+                                                if (activeMetric === 'k') sensorVal = batch.sensor_data.soil.est_k;
+                                            }
 
-                                    const bgColor = getHeatmapColor(sensorVal, activeMetric);
+                                            const bgColor = getHeatmapColor(sensorVal, activeMetric);
 
-                                    return (
-                                        <div key={locString} className="fs-heatmap-cell" style={{ background: bgColor, border: '1px solid var(--border)', minHeight: '60px' }} title={batch ? `${batch.crop}: ${sensorVal || 'N/A'}` : 'Empty'}>
-                                            {sensorVal !== null && <div className="fs-heatmap-cell__label" style={{ color: 'var(--charcoal)', fontWeight: 'bold' }}>{Math.round(sensorVal)}</div>}
-                                            {sensorVal === null && <div className="fs-heatmap-cell__label" style={{ opacity: 0.3, color: 'var(--charcoal)' }}>-</div>}
-                                        </div>
-                                    );
-                                })
-                            ))}
-                        </div>
+                                            return (
+                                                <div key={`${r}-${c}`} className="fs-heatmap-cell" style={{ background: bgColor, border: '1px solid var(--border)', minHeight: '60px' }} title={batch ? `${batch.crop}: ${sensorVal || 'N/A'}` : 'Empty'}>
+                                                    {sensorVal !== null && <div className="fs-heatmap-cell__label" style={{ color: 'var(--charcoal)', fontWeight: 'bold' }}>{Math.round(sensorVal)}</div>}
+                                                    {sensorVal === null && <div className="fs-heatmap-cell__label" style={{ opacity: 0.3, color: 'var(--charcoal)' }}>-</div>}
+                                                </div>
+                                            );
+                                        } else {
+                                            return <div key={`${r}-${c}`} className="fs-heatmap-cell" style={{ background: 'transparent' }} />;
+                                        }
+                                    })
+                                ))}
+                            </div>
+                        )}
                         <div className="fs-heatmap-legend">
                             {activeMetric === 'moisture' && <>
                                 <span className="fs-heatmap-legend__label">Dry</span>
@@ -185,39 +228,25 @@ export default function SoilHealthPage() {
                                 <div className="fs-heatmap-legend__bar" style={{ background: 'linear-gradient(90deg, hsl(50, 70%, 50%), hsl(120, 70%, 50%), hsl(200, 70%, 50%))' }}></div>
                                 <span className="fs-heatmap-legend__label">Alkaline</span>
                             </>}
+                            {activeMetric === 'n' && <>
+                                <span className="fs-heatmap-legend__label">Low N</span>
+                                <div className="fs-heatmap-legend__bar" style={{ background: 'linear-gradient(90deg, hsl(0, 70%, 90%), hsl(0, 70%, 40%))' }}></div>
+                                <span className="fs-heatmap-legend__label">High N</span>
+                            </>}
+                            {activeMetric === 'p' && <>
+                                <span className="fs-heatmap-legend__label">Low P</span>
+                                <div className="fs-heatmap-legend__bar" style={{ background: 'linear-gradient(90deg, hsl(45, 80%, 90%), hsl(45, 80%, 40%))' }}></div>
+                                <span className="fs-heatmap-legend__label">High P</span>
+                            </>}
+                            {activeMetric === 'k' && <>
+                                <span className="fs-heatmap-legend__label">Low K</span>
+                                <div className="fs-heatmap-legend__bar" style={{ background: 'linear-gradient(90deg, hsl(120, 60%, 90%), hsl(120, 60%, 40%))' }}></div>
+                                <span className="fs-heatmap-legend__label">High K</span>
+                            </>}
                         </div>
                     </div>
                 </div>
 
-                {/* AI Threat Feed */}
-                <div className="fs-card">
-                    <div className="fs-card__header">
-                        <div>
-                            <div className="fs-card__title">AI Threat Feed</div>
-                            <div className="fs-card__sub">Live farm-wide actionable risks</div>
-                        </div>
-                    </div>
-                    <div className="fs-card__body" style={{ maxHeight: '380px', overflowY: 'auto' }}>
-                        {aiThreats.length === 0 ? (
-                            <div className="fs-no-results" style={{ padding: '40px 10px' }}>
-                                <div className="fs-no-results__icon">🛡️</div>
-                                <div className="fs-no-results__title">No Active Threats</div>
-                                <div className="fs-no-results__desc">AI systems report perfect environmental conditions across all arrays.</div>
-                            </div>
-                        ) : (
-                            aiThreats.map(b => (
-                                <div key={b.id} className={`fs-threat-entry ${b.status === 'danger' ? 'fs-threat-entry--danger' : 'fs-threat-entry--warn'}`}>
-                                    <div className="fs-threat-entry__icon">{b.status === 'danger' ? '🚨' : '⚠️'}</div>
-                                    <div>
-                                        <div className="fs-threat-entry__title">{b.location} · {b.crop}</div>
-                                        <div className="fs-threat-entry__desc">{b.ai_report.analysis}</div>
-                                        <div className="fs-threat-entry__meta">Detected moments ago</div>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
             </div>
         </>
     );

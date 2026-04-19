@@ -29,3 +29,7 @@ dist-ssr
 
 # Ignore Google Cloud Service Account keys
 gaia-sabah-c3-group2-aifarm-02d42c9eeb6a.json
+
+# Python virtual environment
+venv/
+.venv/

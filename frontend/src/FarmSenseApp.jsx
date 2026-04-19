@@ -7,6 +7,8 @@ import BatchProfiles from "./pages/BatchProfiles.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import "./farmsense.css";
 
+import FarmLayout from "./pages/FarmLayout.jsx";
+
 export default function FarmSenseApp() {
   return (
     <div className="fs-app">
@@ -20,6 +22,7 @@ export default function FarmSenseApp() {
             <Route path="/disease-map" element={<DiseaseMap />} />
             <Route path="/crop-profiles" element={<CropProfiles />} />
             <Route path="/batch-profiles" element={<BatchProfiles />} />
+            <Route path="/farm-layout" element={<FarmLayout />} />
             <Route path="*" element={<div>Page Not Found</div>} />
           </Routes>
         </div>
