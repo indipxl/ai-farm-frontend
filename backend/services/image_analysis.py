@@ -5,7 +5,7 @@ import re
 from pydantic import BaseModel
 from typing import Optional
 from firebase_admin import firestore
-from fastapi import APIRouter, File, UploadFile, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, WebSocket, WebSocketDisconnect
 from langchain_google_genai import ChatGoogleGenerativeAI
 from io import BytesIO
 from PIL import Image
@@ -77,14 +77,17 @@ def encode_image(image_bytes: bytes) -> str:
     return base64.b64encode(image_bytes).decode()
 
 @router.post("/upload-image-analysis")
-async def analysis(file: UploadFile = File(...), batch_id: str = None):
+async def analysis(file: UploadFile = File(...), batch_id: str = Form(None)):
     try:
-        # Fetch the expected crop name from Firestore using batch_id
         expected_crop = "any tropical plant"
         if batch_id:
-            batch_doc = db.collection('batches').document(batch_id).get()
-            if batch_doc.exists:
-                expected_crop = batch_doc.to_dict()['crop'].lower().strip()
+            all_batches = db.collection('batches').stream()
+            for b in all_batches:
+                data = b.to_dict()
+                b_id = data.get('batch_id', b.id[:10].upper())
+                if b_id == batch_id:
+                    expected_crop = data.get('crop', 'any tropical plant').lower().strip()
+                    break
 
         # Read and encode image
         image_bytes = await file.read()
