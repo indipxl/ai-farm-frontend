@@ -104,7 +104,8 @@ export function useImageAnalysis(batchId) {
                     status: analysisData.status,
                     detail: analysisData.detail,
                     suggestions: analysisData.suggestions,
-                    image_base64: imageBase64Ref.current
+                    image_base64: imageBase64Ref.current,
+                    bounding_boxes: analysisData.bounding_boxes || []
                 })
             });
 

@@ -98,17 +98,16 @@ export default function ScanModal({ batch, onClose, onSaveSuccess }) {
                     )}
                     {result && (
                         <>
-                            {rawAnalysis?.bounding_boxes?.length > 0 ? (
-                                <AnnotatedImage src={uploadedImage} boxes={rawAnalysis.bounding_boxes} />
-                            ) : (
-                                <div style={{ display: 'flex', gap: '11px', justifyContent: 'center', marginBottom: '14px' }}>
-                                    <span style={{ fontSize: '1.9rem' }}>{result.icon}</span>
-                                    <div>
-                                        <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>{result.title}</div>
-                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>{result.conf}</div>
-                                    </div>
+                            <div style={{ position: 'relative' }}>
+                                <AnnotatedImage src={uploadedImage} boxes={rawAnalysis?.bounding_boxes || []} />
+                            </div>
+                            <div style={{ display: 'flex', gap: '11px', justifyContent: 'center', marginBottom: '14px', marginTop: '14px' }}>
+                                <span style={{ fontSize: '1.9rem' }}>{result.icon}</span>
+                                <div>
+                                    <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>{result.title}</div>
+                                    <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>{result.conf}</div>
                                 </div>
-                            )}
+                            </div>
                             <div style={{ background: 'var(--cream2)', borderRadius: '10px', padding: '11px 13px', marginBottom: '12px', fontSize: '0.78rem' }}>
                                 {result.detail}
                             </div>

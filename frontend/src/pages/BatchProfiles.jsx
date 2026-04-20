@@ -263,15 +263,15 @@ export default function BatchProfilesPage() {
                             </div>
                             <div
                                 className={`fs-ai-box ${aiBoxCls[b.status]} fs-ai-cam ${b.image_analysis ? 'is-clickable' : ''}`}
+                                onClick={b.image_analysis ? () => setSelectedAnalysis(b.image_analysis) : undefined}
+                                title={b.image_analysis ? "View details" : undefined}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                                     <div
                                         style={{
                                             flex: 1,
                                             opacity: b.image_analysis ? 1 : 0.6
                                         }}
-                                        onClick={b.image_analysis ? () => setSelectedAnalysis(b.image_analysis) : undefined}
-                                        title={b.image_analysis ? "View details" : undefined}
                                     >
                                         <div className="fs-ai-box__tag">
                                             <span className="fs-ai-box__emoji">🔍</span> AI Camera Vision
@@ -285,6 +285,11 @@ export default function BatchProfilesPage() {
                                                 : '--'}
                                         </div>
                                     </div>
+                                    {b.image_analysis?.image_base64 && (
+                                        <div style={{ width: '60px', height: '60px', marginLeft: '12px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                                            <AnnotatedImage src={b.image_analysis.image_base64} boxes={b.image_analysis.bounding_boxes} />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="fs-suggestion">
