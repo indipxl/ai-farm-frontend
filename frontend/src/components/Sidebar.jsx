@@ -2,7 +2,7 @@ import { Link, Routes, Route, useNavigate, useLocation } from "react-router-dom"
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
-
+import FarmLogo from "./FarmLogo.png";
 import { useFarmSettings } from "../useFarmSettings";
 
 const NAV_ITEMS = [
@@ -48,14 +48,14 @@ export default function Sidebar() {
                         const city = data.address.city || data.address.town || data.address.village || data.address.county || "";
                         const state = data.address.state || "";
                         const country = data.address.country || "";
-                        
+
                         let parts = [];
                         if (city) parts.push(city);
                         if (state && state !== city) parts.push(state);
                         if (country) parts.push(country);
-                        
+
                         if (parts.length > 0) {
-                           setDynamicLocation(parts.join(', '));
+                            setDynamicLocation(parts.join(', '));
                         }
                     }
                 } catch (e) {
@@ -92,7 +92,9 @@ export default function Sidebar() {
                 )}
             </button>
             <div className="fs-sidebar__brand">
-                <div className="fs-sidebar__logo">🌿</div>
+                <div className="fs-sidebar__logo">
+                    <img src={FarmLogo} alt="Logo" width="34" height="34" />
+                </div>
                 <div className="fs-sidebar__name"><span>Ai</span> Farm</div>
             </div>
             <div className="fs-sidebar__farm">

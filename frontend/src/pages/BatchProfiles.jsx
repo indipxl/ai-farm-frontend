@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useBatches } from "../useBatches.js";
 import ScanModal from "../components/ScanModal";
+import AnnotatedImage from "../components/AnnotatedImage";
 import QRModal from "../components/QRModal";
 import RegisterBatchModal from "../components/RegisterBatchModal";
 import EditBatchModal from "../components/EditBatchModal";
@@ -290,6 +291,7 @@ export default function BatchProfilesPage() {
                                 <div className="fs-suggestion__label">AI Recommendation</div>
                                 {b.ai_report?.analysis ?? 'No analysis available.'}
                             </div>
+
                             <div className="fs-batch-actions">
                                 <button className="fs-btn-scan" onClick={() => setScanBatch(b)} style={{ width: '100%' }}>
                                     <span className="fs-btn-scan__dot">◉</span>Scan with Camera

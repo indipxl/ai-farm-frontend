@@ -149,7 +149,7 @@ export default function FieldMap({ batches, editMode = false }) {
                                                             {editMode && (
                                                                 <button 
                                                                     onClick={(e) => handleDeleteBlock(block, e)}
-                                                                    style={{ position: 'absolute', top: 2, right: 4, background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: '1rem', zIndex: 10 }}
+                                                                    style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: '2.5rem', zIndex: 10 }}
                                                                     title="Delete Block"
                                                                 >
                                                                     &times;
@@ -157,9 +157,6 @@ export default function FieldMap({ batches, editMode = false }) {
                                                             )}
                                                             <div className="fs-map-block__label" style={{ opacity: 0.6 }}>{block.label}</div>
                                                             <div className="fs-map-block__crop" style={{ opacity: 0.2 }}>-</div>
-                                                            <div className="fs-map-block__status" style={{ textAlign: 'center', opacity: 0.6 }}>
-                                                                Empty
-                                                            </div>
                                                         </div>
                                                     );
                                                 }
@@ -191,7 +188,7 @@ export default function FieldMap({ batches, editMode = false }) {
 
             {selectedBatch && (
                 <div className="fs-modal-overlay" onClick={() => setSelectedBatch(null)} style={{ zIndex: 9999 }}>
-                    <div className="fs-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '420px', padding: 0, overflow: 'hidden', background: 'transparent', boxShadow: 'none' }}>
+                    <div className="fs-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '420px', padding: 0, overflowY: 'auto', maxHeight: '90vh', background: 'transparent', boxShadow: 'none' }}>
                         <div className={`fs-batch-card ${cardCls[selectedBatch.status]} m-0`} style={{ margin: 0, width: '100%', animationDelay: '0s' }}>
                             <div className={`fs-batch-card__bar ${barCls[selectedBatch.status]}`} />
                             <div className="fs-batch-card__header">

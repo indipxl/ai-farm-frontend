@@ -102,11 +102,14 @@ def analyze_soil_with_llm(data, crop_retrieved):
     - Critical)
     3. SOIL HEALTH SCORE: Give a score based on all the sensor reading and the classification above. (Provide only the integer between 0 and 100)
     4. RECOMMENDED ACTIONS: Briefly state what disease or pest attack is likely. If none, state "No risk of disease or pest attack". 
-    Followed by exactly 3 short actionable recommendations in this list format with new line each: 
+    If there is a risk of disease or pest attack, provide exactly 3 short actionable recommendations in this format: 
     Action 1: 
     Action 2:
     Action 3: 
-    Strict Rule: You must press "Enter" twice between each Action so there is a blank line between them.
+    Formatting Rules:
+    - You MUST put a double line break (press Enter twice) after the summary.
+    - Every bullet point MUST start on a brand new line.
+    - Do not use a paragraph format.
     """
 
     response = client.models.generate_content(

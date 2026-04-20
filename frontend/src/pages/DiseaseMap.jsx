@@ -228,7 +228,8 @@ export default function DiseaseMapPage() {
                                     const blockPred = getBlockPrediction(block.id);
                                     let riskData = null;
                                     
-                                    if (blockPred) {
+                                    // Only show predictions on the map if there is actually a crop planted there
+                                    if (blockPred && liveBatch) {
                                         riskData = mode === 'soil_borne' ? blockPred.soil_borne : blockPred.air_borne;
                                     }
 
@@ -400,7 +401,25 @@ export default function DiseaseMapPage() {
                           {riskData.reason}
                       </p>
 
-                      {riskData.needs_scan && (
+                      {selectedBatch.image_analysis && (
+                          <div className={`fs-ai-box fs-ai-cam`} style={{ marginTop: '12px', background: 'var(--card)', border: '1px solid var(--border)' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                  <div style={{ flex: 1, textAlign: 'left' }}>
+                                      <div className="fs-ai-box__tag" style={{ color: 'var(--charcoal)', fontWeight: 600 }}>
+                                          <span className="fs-ai-box__emoji">🔍</span> LATEST AI CAMERA VISION
+                                      </div>
+                                      <div className="fs-ai-box__result" style={{ fontSize: '0.9rem', color: 'var(--charcoal)' }}>
+                                          {selectedBatch.image_analysis.detection}
+                                      </div>
+                                      <div className="fs-ai-box__conf">
+                                          Confidence: {selectedBatch.image_analysis.confidence}%
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      )}
+
+                      {!selectedBatch.image_analysis && riskData.needs_scan && (
                           <div style={{ marginTop: '12px', padding: '8px', background: '#333', color: '#fff', borderRadius: '6px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                               📸 <span><strong>Visual Scan Required:</strong> Anomalies detected in sensors. Please scan plant for visual confirmation.</span>
                           </div>

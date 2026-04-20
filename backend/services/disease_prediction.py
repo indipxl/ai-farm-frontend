@@ -93,7 +93,9 @@ async def analyze_disease_spread():
         grid_state = []
         for block in blocks:
             block_label = block.get('label', '')
-            batch = next((b for b in active_batches_mapped if b.get('location', '').strip().upper() == block_label.upper()), None)
+            
+            # Robust matching: check exact match or "BLOCK [LABEL]" match
+            batch = next((b for b in active_batches_mapped if b.get('location', '').strip().upper() == block_label.upper() or b.get('location', '').strip().upper() == f"BLOCK {block_label.upper()}"), None)
             
             block_data = {
                 "block_id": block.get('id'),

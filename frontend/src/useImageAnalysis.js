@@ -46,6 +46,9 @@ export function useImageAnalysis(batchId) {
         try {
             const formData = new FormData();
             formData.append('file', file);
+            if (batchId) {
+                formData.append('batch_id', batchId);
+            }
 
             const response = await fetch(`${API_BASE_URL}/api/image/upload-image-analysis`, {
                 method: 'POST',
