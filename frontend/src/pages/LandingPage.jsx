@@ -94,6 +94,13 @@ const PLANS = [
 function Navbar({ scrolled }) {
   // ✅ FIX 3: `open` is now actually used — controls the mobile dropdown
   const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() =>{
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <nav style={{
@@ -122,15 +129,18 @@ function Navbar({ scrolled }) {
         </a>
 
         {/* Desktop links */}
-        <div style={styles.navLinks}>
+        {!isMobile && (
+          <div style={styles.navLinks}>
           {NAV_LINKS.map((l) => (
             <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, "-")}`} style={styles.navLink}>
               {l}
             </a>
           ))}
         </div>
+        )}
 
         {/* Desktop actions */}
+        {!isMobile && (
         <div style={styles.navActions}>
           <div style={styles.navLiveBadge}>
             <span style={styles.liveDot} />
@@ -139,17 +149,32 @@ function Navbar({ scrolled }) {
           <a href="/login" style={styles.navSignIn}>Sign In</a>
           <a href="/login" style={styles.navCta}>Request Access</a>
         </div>
+        )}
+
+        {/* Mobile right side - Sign In link + hamburger */}
+        {isMobile && (
+          <div style={{display: "flex", alignItems: "center", gap: "0.75rem", marginLeft: "auto"}}>
+            <a href="/login" style={{ ...styles.navSignIn, fontSize: "0.8rem"}}>Sign In</a>
+            <button onClick={() => setOpen(!open)} style={styles.hamburger} aria-label="Toggle menu">
+              <span style={{ ...styles.hamburgerLine, transform: open ? "rotate(45deg) translate(5px, 5px)" : "none"}} />
+              <span style={{ ...styles.hamburgerLine, opencity: open ? 0 : 1 }}/>
+              <span style={{ ...styles.hamburgerLine, transform: open ? "rotate(-45deg) translate(5px, -5px)" : "none"}}/>
+            </button>
+          </div>
+        )}
 
         {/* Hamburger — shown on mobile via CSS would need media query; kept for logic */}
-        <button onClick={() => setOpen(!open)} style={styles.hamburger} aria-label="Toggle menu">
+        {!isMobile && (
+          <button onClick={() => setOpen(!open)} style={styles.hamburger} aria-label="Toggle menu">
           <span style={{ ...styles.hamburgerLine, transform: open ? "rotate(45deg) translate(5px,5px)" : "none" }} />
           <span style={{ ...styles.hamburgerLine, opacity: open ? 0 : 1 }} />
           <span style={{ ...styles.hamburgerLine, transform: open ? "rotate(-45deg) translate(5px,-5px)" : "none" }} />
         </button>
+        )}
       </div>
 
       {/* ── Mobile dropdown ── */}
-      {open && (
+      {open && isMobile && (
         <div style={styles.mobileMenu}>
           {NAV_LINKS.map((l) => (
             <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, "-")}`} style={styles.mobileLink} onClick={() => setOpen(false)}>
@@ -237,11 +262,18 @@ function PricingCard({ name, price, period, desc, features, cta, highlight }) {
 export default function LandingPage() {
   // ✅ FIX 2: scrolled now actually updates via useEffect + scroll listener
   const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
@@ -328,18 +360,25 @@ export default function LandingPage() {
         <div style={styles.sectionInner}>
           <p style={{ ...styles.eyebrow, color: C.gold }}>HOW IT WORKS</p>
           <h2 style={{ ...styles.sectionTitle, color: "#fff" }}>Up and running in 4 steps</h2>
-          <div style={styles.stepsGrid}>
+          
+          <div style={{ ...styles.stepsGrid,
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: isMobile ? "2rem" : "4rem",
+          }}>
             <div style={styles.stepsLeft}>
               {STEPS.map((s, i) => (
                 <StepCard key={s.num} {...s} last={i === STEPS.length - 1} />
               ))}
             </div>
+
+            {/* ✅ Hide illustration on mobile - it cause overflow*/}
             <div style={styles.stepsRight}>
               <div style={styles.stepsIllustration}>
                 <span style={{ fontSize: "5rem" }}>🌾</span>
                 <p style={styles.stepsIllustrationText}>Your smart farm,<br /><span style={{ color: C.gold }}>always online.</span></p>
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -356,12 +395,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" style={{ ...styles.section, background: "#e8e4dc" }}>
-        <div style={styles.sectionInner}>
+      <section id="pricing" style={{ ...styles.section, background: "#e8e4dc", padding: isMobile ? "3rem 1rem" : "5rem 2rem", }}>
+        <div style={{ ...styles.sectionInner, padding: isMobile ? "0 0.5rem" : "0 2rem",}}>
           <p style={styles.eyebrow}>PRICING</p>
           <h2 style={styles.sectionTitle}>Simple, transparent pricing</h2>
           <p style={styles.sectionSub}>Start free, scale as your farm grows. No hidden fees.</p>
-          <div style={styles.pricingGrid}>
+          <div style={{
+            ...styles.pricingGrid,
+            gridTemplateColumns: isMobile ? "1fr" : "repeat(4, 1fr)", }}>
             {PLANS.map((p) => <PricingCard key={p.name} {...p} />)}
           </div>
         </div>
@@ -504,8 +545,8 @@ const styles = {
   farmStatLabel: { fontSize: "0.65rem", color: "rgba(255,255,255,0.45)", fontFamily: "'Segoe UI', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 0.2rem" },
   farmStatValue: { fontSize: "1.2rem", fontWeight: 800, margin: 0, lineHeight: 1 },
 
-  statsStrip: { background: "#fff", borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "center" },
-  statItem: { flex: 1, maxWidth: 220, padding: "2rem 2.5rem", textAlign: "center" },
+  statsStrip: { background: "#fff", borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, display: "flex", flexWrap: "wrap", justifyContent: "center" },
+  statItem: { flex: "1 1 40%", maxWidth: 220, padding: "1.5rem 1rem", textAlign: "center", borderRight: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, boxSizing: "border-box", },
   statValue: { display: "block", fontSize: "2rem", fontWeight: 700, color: C.gold, marginBottom: "0.3rem" },
   statLabel: { display: "block", fontSize: "0.78rem", color: C.textMuted, fontFamily: "'Segoe UI', sans-serif", letterSpacing: "0.04em" },
 
@@ -522,15 +563,20 @@ const styles = {
   featureTitle: { fontSize: "1.05rem", fontWeight: 700, color: C.textDark, margin: "0 0 0.5rem" },
   featureDesc: { fontSize: "0.88rem", color: C.textMuted, lineHeight: 1.7, fontFamily: "'Segoe UI', sans-serif", margin: 0 },
 
-  stepsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center" },
+  // stepsGrid: { display: "grid", gridTemplateColumns: "1fr", gap: "2rem", alignItems: "center" },
+  stepsGrid: { 
+  display: "grid", 
+  gap: "4rem",   // ← won't work in styles object
+  alignItems: "center" 
+},
   stepsLeft: { display: "flex", flexDirection: "column" },
   stepRow: { display: "flex", gap: "1.5rem", marginBottom: "0.5rem" },
   stepLeft: { display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 },
   stepNum: { width: 48, height: 48, borderRadius: "50%", background: "rgba(200,151,58,0.15)", border: `1px solid rgba(200,151,58,0.3)`, color: C.gold, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", fontWeight: 700, fontFamily: "'Segoe UI', sans-serif", flexShrink: 0 },
   stepLine: { flex: 1, width: 1, background: "rgba(255,255,255,0.08)", margin: "0.5rem 0" },
   stepContent: { paddingBottom: "2rem" },
-  stepTitle: { fontSize: "1rem", fontWeight: 700, color: "#fff", margin: "0.7rem 0 0.4rem" },
-  stepDesc: { fontSize: "0.88rem", color: "#7a7060", lineHeight: 1.7, fontFamily: "'Segoe UI', sans-serif", margin: 0 },
+  stepTitle: { fontSize: "1rem", fontWeight: 700, color: "#fff", margin: "0.7rem 0 0.4rem", textAlign: "left" },
+  stepDesc: { fontSize: "0.88rem", color: "#7a7060", lineHeight: 1.7, fontFamily: "'Segoe UI', sans-serif", margin: 0, textAlign: "left" },
   stepsRight: { display: "flex", justifyContent: "center" },
   stepsIllustration: { background: "rgba(200,151,58,0.07)", border: "1px solid rgba(200,151,58,0.15)", borderRadius: "20px", padding: "3rem", textAlign: "center" },
   stepsIllustrationText: { fontSize: "1.3rem", color: "#fff", fontWeight: 700, marginTop: "1rem", lineHeight: 1.4 },
@@ -543,7 +589,7 @@ const styles = {
   testimonialName: { fontSize: "0.9rem", fontWeight: 700, color: C.textDark, margin: 0 },
   testimonialRole: { fontSize: "0.75rem", color: C.textMuted, fontFamily: "'Segoe UI', sans-serif", margin: 0 },
 
-  pricingGrid: { display: "flex", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.25rem", alignItems: "center", justifyContent: "center" },
+  pricingGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1.25rem", alignItems: "start", width: "100%" },
   pricingCard: { background: C.cardBg, border: `1px solid ${C.border}`, borderRadius: "16px", padding: "2rem", position: "relative" },
   pricingHighlight: { background: C.sidebarBg, border: `1px solid rgba(200,151,58,0.3)` },
   popularBadge: { position: "absolute", top: "-0.75rem", left: "50%", transform: "translateX(-50%)", background: C.gold, color: C.sidebarBg, fontSize: "0.72rem", fontWeight: 700, borderRadius: "999px", padding: "0.25rem 0.9rem", fontFamily: "'Segoe UI', sans-serif", whiteSpace: "nowrap" },
