@@ -116,15 +116,7 @@ export default function DiseaseMapPage() {
         </div>
       </div>
 
-      <div style={{ marginBottom: '2rem' }}>
-        <button
-          onClick={analyzeDiseaseSpread}
-          className="fs-btn fs-btn--primary"
-          disabled={predictionLoading}
-        >
-          {predictionLoading ? 'Analyzing...' : 'Run Analysis'}
-        </button>
-      </div>
+
 
       {error && (
         <div style={{ background: 'var(--red)', color: '#fff', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
@@ -172,11 +164,17 @@ export default function DiseaseMapPage() {
           {/* Spread prediction AI Summary */}
           {prediction && (
             <div className="fs-card" style={{ marginBottom: 18, borderLeft: "4px solid var(--primary)" }}>
-              <div className="fs-card__header">
+              <div className="fs-card__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div className="fs-card__title">Spread Forecast</div>
-                  {/* <div className="fs-card__sub">Weather and Sensor contextual analysis</div> */}
                 </div>
+                <button
+                  onClick={analyzeDiseaseSpread}
+                  className="fs-btn fs-btn--primary"
+                  disabled={predictionLoading}
+                >
+                  {predictionLoading ? 'Analyzing...' : 'Run Analysis'}
+                </button>
               </div>
               <div className="fs-card__body">
                 <div className="fs-suggestion">

@@ -1,17 +1,22 @@
-import { Link, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
 import FarmLogo from "./logo/FarmLogo.png";
+import FarmLayoutLogo from "./logo/FarmLayoutLogo.png";
+import DashboardLogo from "./logo/DashboardLogo.png";
+import BatchLogo from "./logo/BatchLogo.png";
+import DiseaseMapLogo from "./logo/DiseaseMapLogo.png";
+import SoilMonitorLogo from "./logo/SoilMonitorLogo.png";
 import { useFarmSettings } from "../useFarmSettings";
 
 const NAV_ITEMS = [
-    { path: "/farm-layout", icon: "🗺️", label: "Farm Layout" },// section: "Main" },
-    { path: "/dashboard", icon: "🏠", label: "Dashboard" },// section: "Main" },
-    { path: "/batch-profiles", icon: "🌱", label: "Batch Profiles" }, //section: "Configuration" },
+    { path: "/farm-layout", icon: FarmLayoutLogo, label: "Farm Layout" },// section: "Main" },
+    { path: "/dashboard", icon: DashboardLogo, label: "Dashboard" },// section: "Main" },
+    { path: "/batch-profiles", icon: BatchLogo, label: "Batch Profiles" }, //section: "Configuration" },
     // { path: "/crop-profiles", icon: "🌱", label: "Crop Profiles", section: "Configuration" },
-    { path: "/disease-map", icon: "🗺️", label: "Disease Map" }, //section: "Monitoring" },
-    { path: "/soil-health", icon: "👀", label: "Soil Monitor" }, //section: "Monitoring" },
+    { path: "/disease-map", icon: DiseaseMapLogo, label: "Disease Map" }, //section: "Monitoring" },
+    { path: "/soil-health", icon: SoilMonitorLogo, label: "Soil Monitor" }, //section: "Monitoring" },
 
 ];
 
@@ -106,7 +111,9 @@ export default function Sidebar() {
                         <div className="fs-sidebar__section-label">Menu</div>
                         {items.map(item => (
                             <Link key={item.path} to={item.path} className={`fs-nav-item${location.pathname === item.path ? " fs-nav-item--active" : ""}`} title={isCollapsed ? item.label : ""}>
-                                <span className="fs-nav-item__icon">{item.icon}</span>
+                                <span className="fs-nav-item__icon">
+                                    <img src={item.icon} alt="" width="24" height="24" />
+                                </span>
                                 <span className="fs-nav-item__label">{item.label}</span>
                             </Link>
                         ))}
