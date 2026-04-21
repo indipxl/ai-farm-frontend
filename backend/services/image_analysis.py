@@ -9,7 +9,7 @@ from fastapi import APIRouter, File, UploadFile, Form, HTTPException, WebSocket,
 from langchain_google_genai import ChatGoogleGenerativeAI
 from io import BytesIO
 from PIL import Image
-import numpy as np
+#import numpy as np
 from ultralytics import YOLO
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv

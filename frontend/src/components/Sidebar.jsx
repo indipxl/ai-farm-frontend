@@ -2,16 +2,17 @@ import { Link, Routes, Route, useNavigate, useLocation } from "react-router-dom"
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
-import FarmLogo from "./FarmLogo.png";
+import FarmLogo from "./logo/FarmLogo.png";
 import { useFarmSettings } from "../useFarmSettings";
 
 const NAV_ITEMS = [
-    { path: "/dashboard", icon: "🏠", label: "Dashboard", section: "Main" },
-    { path: "/soil-health", icon: "🪱", label: "Soil Monitor", section: "Monitoring" },
-    { path: "/disease-map", icon: "🗺️", label: "Disease Map", section: "Monitoring" },
-    { path: "/batch-profiles", icon: "🌱", label: "Batch Profiles", section: "Configuration" },
-    { path: "/crop-profiles", icon: "🌱", label: "Crop Profiles", section: "Configuration" },
-    { path: "/farm-layout", icon: "🗺️", label: "Farm Layout", section: "Configuration" },
+    { path: "/farm-layout", icon: "🗺️", label: "Farm Layout" },// section: "Main" },
+    { path: "/dashboard", icon: "🏠", label: "Dashboard" },// section: "Main" },
+    { path: "/batch-profiles", icon: "🌱", label: "Batch Profiles" }, //section: "Configuration" },
+    // { path: "/crop-profiles", icon: "🌱", label: "Crop Profiles", section: "Configuration" },
+    { path: "/disease-map", icon: "🗺️", label: "Disease Map" }, //section: "Monitoring" },
+    { path: "/soil-health", icon: "👀", label: "Soil Monitor" }, //section: "Monitoring" },
+
 ];
 
 export default function Sidebar() {
@@ -79,15 +80,13 @@ export default function Sidebar() {
                 title="Toggle Sidebar"
             >
                 {isCollapsed ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 6 6 18" />
-                        <path d="m6 6 12 12" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m9 18 6-6-6-6" />
                     </svg>
                 ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="3" x2="21" y1="6" y2="6" />
-                        <line x1="3" x2="21" y2="12" />
-                        <line x1="3" x2="21" y3="18" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="15" y1="18" x2="9" y2="12" />
+                        <line x1="9" y1="12" x2="15" y2="6" />
                     </svg>
                 )}
             </button>
@@ -104,7 +103,7 @@ export default function Sidebar() {
             <nav className="fs-sidebar__nav">
                 {Object.entries(groupedNav).map(([section, items]) => (
                     <div key={section}>
-                        <div className="fs-sidebar__section-label">{section}</div>
+                        <div className="fs-sidebar__section-label">Menu</div>
                         {items.map(item => (
                             <Link key={item.path} to={item.path} className={`fs-nav-item${location.pathname === item.path ? " fs-nav-item--active" : ""}`} title={isCollapsed ? item.label : ""}>
                                 <span className="fs-nav-item__icon">{item.icon}</span>

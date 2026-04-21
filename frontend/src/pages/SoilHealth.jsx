@@ -93,15 +93,15 @@ export default function SoilHealthPage() {
         <>
             <div className="fs-page-header">
                 <div>
-                    <div className="fs-page-eyebrow">Farm-Wide Analytics · Synced Now</div>
+                    {/* <div className="fs-page-eyebrow">Farm-Wide Analytics · Synced Now</div> */}
                     <h1 className="fs-page-title">Soil <em>Monitor</em></h1>
-                    <p className="fs-page-sub">Global macro-level environment metrics and mapping</p>
+                    {/* <p className="fs-page-sub">Global macro-level environment metrics and mapping</p> */}
                 </div>
             </div>
 
             <div className="fs-stat-strip">
                 <div className="fs-stat-card fs-stat-card--red">
-                    <div className="fs-stat-card__label">Active Interventions</div>
+                    <div className="fs-stat-card__label">Interventions Needed</div>
                     <div className={`fs-stat-card__val ${criticalBlocks.length > 0 ? "fs-stat-card__val--danger" : ""}`}>
                         {criticalBlocks.length}
                     </div>
@@ -111,15 +111,15 @@ export default function SoilHealthPage() {
                     </span>
                 </div>
 
-                <div className="fs-stat-card fs-stat-card--blue">
+                {/* <div className="fs-stat-card fs-stat-card--blue">
                     <div className="fs-stat-card__label">7-Day Health Trend</div>
                     <div className="fs-stat-card__val fs-stat-card__val--blue">{trendText}</div>
                     <div className="fs-stat-card__meta">{trendMeta}</div>
                     <span className="fs-stat-tag fs-stat-tag--blue">Improving</span>
-                </div>
+                </div> */}
 
                 <div className="fs-stat-card fs-stat-card--amber">
-                    <div className="fs-stat-card__label">Primary Deficit</div>
+                    {/* <div className="fs-stat-card__label">Primary Deficit</div> */}
                     <div className="fs-stat-card__val fs-stat-card__val--warn" style={{ fontSize: '1.4rem', marginTop: '10px' }}>
                         {rootDeficit}
                     </div>
@@ -176,14 +176,14 @@ export default function SoilHealthPage() {
                                 <p>No blocks configured. Please set up your layout in Farm Layout.</p>
                             </div>
                         ) : (
-                            <div className="fs-heatmap-grid" style={{ 
-                                gridTemplateColumns: `repeat(${gridCols}, minmax(40px, 1fr))`, 
-                                gridTemplateRows: `repeat(${gridRows}, minmax(40px, 1fr))` 
+                            <div className="fs-heatmap-grid" style={{
+                                gridTemplateColumns: `repeat(${gridCols}, minmax(40px, 1fr))`,
+                                gridTemplateRows: `repeat(${gridRows}, minmax(40px, 1fr))`
                             }}>
                                 {rows.map(r => (
                                     cols.map(c => {
                                         const block = blocks.find(b => b.row === r && b.col === c);
-                                        
+
                                         if (block) {
                                             const batch = getBatchForLocation(block.label);
                                             let sensorVal = null;

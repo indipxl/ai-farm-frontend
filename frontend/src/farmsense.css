@@ -427,13 +427,13 @@ body {
 }
 
 .fs-page-title em {
-  color: var(--gold-dim);
+  color: var(--charcoal);
   font-style: normal;
 }
 
 .fs-page-sub {
   color: var(--text-dim);
-  font-size: 0.82rem;
+  font-size: 1.1rem;
   margin-top: 6px;
 }
 

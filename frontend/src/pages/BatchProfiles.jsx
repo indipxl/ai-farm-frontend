@@ -140,7 +140,6 @@ export default function BatchProfilesPage() {
         <>
             <div className="fs-page-header">
                 <div>
-                    <div className="fs-page-eyebrow">Custom Batch Configuration</div>
                     <h1 className="fs-page-title">Batch <em>Profiles</em></h1>
                     <p className="fs-page-sub">Monitoring {(batches || []).length} active batches</p>
                 </div>
@@ -162,9 +161,9 @@ export default function BatchProfilesPage() {
             <div className="fs-section-row">
                 <div className="fs-section-label">Registered Batches</div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                        className="fs-btn fs-btn--ghost fs-btn--sm" 
-                        onClick={handleAnalyzeAll} 
+                    <button
+                        className="fs-btn fs-btn--ghost fs-btn--sm"
+                        onClick={handleAnalyzeAll}
                         disabled={analyzingAll}
                         style={{ borderColor: 'var(--green)', color: 'var(--green)' }}
                     >
@@ -228,7 +227,7 @@ export default function BatchProfilesPage() {
                                     <span className="fs-sensor-mini__name">Humidity</span>
                                     <span className="fs-sensor-mini__val">{b.sensor_data?.air?.hum ?? '--'}%</span>
                                 </div>
-                                
+
                                 {/* Soil Sensors */}
                                 <div className="fs-sensor-mini">
                                     <span className="fs-sensor-mini__icon">🌱</span>
