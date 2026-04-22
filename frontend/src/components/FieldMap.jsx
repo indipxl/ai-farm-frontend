@@ -43,7 +43,7 @@ export default function FieldMap({ batches, editMode = false }) {
         const rChar = rowsChars[r] || "Z";
         const newId = `${rChar}${c + 1}`;
         const newBlock = { id: newId, row: r, col: c, label: `BLOCK ${newId}` };
-        
+
         await updateSettings({
             ...settings,
             num_blocks: (settings.num_blocks || blocks.length) + 1,
@@ -103,7 +103,7 @@ export default function FieldMap({ batches, editMode = false }) {
                                 <div style={{ padding: '2rem', textAlign: 'center' }}>
                                     <p>No blocks configured.</p>
                                     {editMode && (
-                                        <button 
+                                        <button
                                             onClick={() => handleAddBlock(0, 0)}
                                             style={{ padding: '0.5rem 1rem', background: 'var(--charcoal)', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}>
                                             + Add First Block (A1)
@@ -111,14 +111,14 @@ export default function FieldMap({ batches, editMode = false }) {
                                     )}
                                 </div>
                             ) : (
-                                <div className="fs-map-grid" style={{ 
+                                <div className="fs-map-grid" style={{
                                     gridTemplateColumns: `repeat(${gridCols}, minmax(80px, 1fr))`,
                                     gridTemplateRows: `repeat(${gridRows}, minmax(80px, 1fr))`
                                 }}>
                                     {rows.map(r => (
                                         cols.map(c => {
                                             const block = blocks.find(b => b.row === r && b.col === c);
-                                            
+
                                             if (block) {
                                                 const batch = getBatchForLocation(block.label);
                                                 if (batch) {
@@ -147,7 +147,7 @@ export default function FieldMap({ batches, editMode = false }) {
                                                     return (
                                                         <div key={`${r}-${c}`} className="fs-map-block fs-map-block--empty" title={`Empty Plot`} style={{ position: 'relative' }}>
                                                             {editMode && (
-                                                                <button 
+                                                                <button
                                                                     onClick={(e) => handleDeleteBlock(block, e)}
                                                                     style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: '2.5rem', zIndex: 10 }}
                                                                     title="Delete Block"
@@ -163,9 +163,9 @@ export default function FieldMap({ batches, editMode = false }) {
                                             } else if (editMode && isAdjacent(r, c)) {
                                                 // Render an add button
                                                 return (
-                                                    <div 
-                                                        key={`${r}-${c}`} 
-                                                        className="fs-map-block fs-map-block--empty" 
+                                                    <div
+                                                        key={`${r}-${c}`}
+                                                        className="fs-map-block fs-map-block--empty"
                                                         onClick={() => handleAddBlock(r, c)}
                                                         style={{ cursor: 'pointer', border: '2px dashed var(--border)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                                         title="Add Block"

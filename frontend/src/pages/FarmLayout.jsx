@@ -55,15 +55,15 @@ export default function FarmLayout() {
         const city = data.address.city || data.address.town || data.address.village || data.address.county || "";
         const state = data.address.state || "";
         const country = data.address.country || "";
-        
+
         let parts = [];
         if (city) parts.push(city);
         if (state && state !== city) parts.push(state);
         if (country) parts.push(country);
-        
+
         if (parts.length > 0) {
-           setFarmLocation(parts.join(', '));
-           toast.success('Location auto-detected!');
+          setFarmLocation(parts.join(', '));
+          toast.success('Location auto-detected!');
         }
       }
     } catch (e) {
@@ -74,7 +74,7 @@ export default function FarmLayout() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    
+
     try {
       await updateSettings({
         ...settings, // Preserve existing blocks and num_blocks
@@ -93,12 +93,13 @@ export default function FarmLayout() {
     }
   };
 
-  if (loading) return <div style={{ padding: '2rem' }}>Loading settings...</div>;
-
+  if (loading) {
+    return <div className="fs-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><div className="fs-spinner"></div></div>;
+  }
   const defaultCenter = [5.9788, 116.0753]; // Default to Kota Kinabalu
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <>
       <div className="fs-page-header" style={{ marginBottom: '2rem' }}>
         <div>
           <h1 className="fs-page-title">Farm <em>Layout</em></h1>
@@ -106,10 +107,10 @@ export default function FarmLayout() {
         </div>
       </div>
 
-      <div className="fs-card" style={{ maxWidth: '800px' }}>
+      <div className="fs-card">
         <div className="fs-card__body" style={{ padding: '2rem' }}>
           <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            
+
             {/* Identity */}
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
@@ -183,18 +184,23 @@ export default function FarmLayout() {
               )}
             </div>
 
+            <div className="fs-grid-2">
+              <FieldMap batches={[]} editMode={true} />
+            </div>
+
             <button
               type="submit"
               disabled={submitting}
               style={{
-                marginTop: '1rem',
-                padding: '1rem',
                 background: 'var(--charcoal)',
                 color: '#fff',
                 borderRadius: '8px',
                 fontWeight: 600,
                 border: 'none',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                marginLeft: 'auto',
+                padding: '0.75rem 1.5rem',
+                alignSelf: 'flex-end'
               }}
             >
               {submitting ? 'Saving Location & Orientation...' : 'Save Configuration'}
@@ -202,10 +208,6 @@ export default function FarmLayout() {
           </form>
         </div>
       </div>
-
-      <div style={{ maxWidth: '800px', marginTop: '2rem' }}>
-          <FieldMap batches={[]} editMode={true} />
-      </div>
-    </div>
+    </>
   );
 }
