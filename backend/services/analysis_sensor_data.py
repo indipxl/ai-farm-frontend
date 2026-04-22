@@ -89,7 +89,7 @@ def analyze_soil_with_llm(data, crop_retrieved):
     - Humidity: {air.get('hum', 'N/A')}%
     - Soil Temperature: {soil.get('temp', 'N/A')}°C
     - Soil Moisture: {soil.get('moisture', 'N/A')}%
-    - Soil EC: {soil.get('ec', 'N/A')} uS/cm
+    - Soil EC: {soil.get('ec', 'N/A')} dS/m
     - NPK (Estimated): N:{soil.get('est_n', 'N/A')}, P:{soil.get('est_p', 'N/A')}, K:{soil.get('est_k', 'N/A')} mg/kg
     - Soil pH: {soil.get('ph', 'N/A')}
     
